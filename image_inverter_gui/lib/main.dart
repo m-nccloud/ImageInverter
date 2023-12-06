@@ -31,6 +31,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   File imageFile = File("");
+  int _inversionShape = 0;
 
   @override
   Widget build(BuildContext context) {
@@ -40,11 +41,33 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
         body: Center(
             child: Column(children: [
-          ElevatedButton(
-            onPressed: () {
-              openFileManager();
-            },
-            child: Text('Select Image to Invert'),
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: () {
+                  openFileManager();
+                },
+                child: Text('Select Image to Invert'),
+              ),
+              Text("Select Inversion Shape: \tBox"),
+              Radio(
+                  value: 0,
+                  groupValue: _inversionShape,
+                  onChanged: (value) {
+                    setState(() {
+                      _inversionShape = value!;
+                    });
+                  }),
+              Text("Circle"),
+              Radio(
+                  value: 1,
+                  groupValue: _inversionShape,
+                  onChanged: (value) {
+                    setState(() {
+                      _inversionShape = value!;
+                    });
+                  })
+            ],
           ),
           Visibility(
               visible: imageFile.path != "", child: Image.file(imageFile)),
@@ -61,5 +84,9 @@ class _MyHomePageState extends State<MyHomePage> {
       print(imageFile.path);
     }
     return imageFile;
+  }
+
+  void setInversionShape(int selection) {
+    _inversionShape = selection;
   }
 }
