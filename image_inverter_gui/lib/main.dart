@@ -58,9 +58,18 @@ class _MyHomePageState extends State<MyHomePage> {
                       _inversionShape = value!;
                     });
                   }),
-              Text("Circle"),
+              Text("Rect"),
               Radio(
                   value: 1,
+                  groupValue: _inversionShape,
+                  onChanged: (value) {
+                    setState(() {
+                      _inversionShape = value!;
+                    });
+                  }),
+              Text("Circle"),
+              Radio(
+                  value: 2,
                   groupValue: _inversionShape,
                   onChanged: (value) {
                     setState(() {
@@ -71,6 +80,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Visibility(
               visible: imageFile.path != "", child: Image.file(imageFile)),
+          Visibility(visible: imageFile.path != "", child: Slider())
         ])));
   }
 
