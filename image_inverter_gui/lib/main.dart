@@ -32,6 +32,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   File imageFile = File("");
   int _inversionShape = 0;
+  double _sliderCurr = 0;
+  double _sliderMin = 0;
+  double _sliderMax = 100;
+  String _inversionLabel = "Inversion Width";
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +60,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onChanged: (value) {
                     setState(() {
                       _inversionShape = value!;
+                      _inversionLabel = "Inversion Width";
                     });
                   }),
               Text("Rect"),
@@ -65,6 +70,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   onChanged: (value) {
                     setState(() {
                       _inversionShape = value!;
+                      _inversionLabel = "Inversion Width";
                     });
                   }),
               Text("Circle"),
@@ -74,13 +80,28 @@ class _MyHomePageState extends State<MyHomePage> {
                   onChanged: (value) {
                     setState(() {
                       _inversionShape = value!;
+                      _inversionLabel = "Inversion Radius";
                     });
                   })
             ],
           ),
           Visibility(
-              visible: imageFile.path != "", child: Image.file(imageFile)),
-          Visibility(visible: imageFile.path != "", child: Slider())
+              visible: imageFile.path != "",
+              child: Column(
+                children: [
+                  Image.file(imageFile),
+                  Slider(
+                      value: _sliderCurr,
+                      min: _sliderMin,
+                      max: _sliderMax,
+                      onChanged: (val) {
+                        setState(() {
+                          _sliderCurr = val;
+                        });
+                      }),
+                  Text('$_inversionLabel: ${_sliderCurr.floor()}')
+                ],
+              )),
         ])));
   }
 
