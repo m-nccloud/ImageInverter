@@ -1,7 +1,14 @@
+import 'dart:convert';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:image_size_getter/image_size_getter.dart';
+import 'package:image_size_getter/file_input.dart';
+import 'inversion_functions.dart';
 import 'dart:io';
 import 'dart:async';
+import 'dart:ui' as ui;
 
 void main() {
   runApp(const MyApp());
@@ -31,10 +38,11 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   File imageFile = File("");
+  var invertedImgMemory;
+  late var size;
   int _inversionShape = 0;
   double _sliderCurr = 0;
-  double _sliderMin = 0;
-  double _sliderMax = 100;
+  double _sliderMax = 0;
   String _inversionLabel = "Inversion Width";
 
   @override
@@ -89,17 +97,19 @@ class _MyHomePageState extends State<MyHomePage> {
               visible: imageFile.path != "",
               child: Column(
                 children: [
-                  Image.file(imageFile),
+                  imgGetter(),
                   Slider(
                       value: _sliderCurr,
-                      min: _sliderMin,
                       max: _sliderMax,
                       onChanged: (val) {
                         setState(() {
                           _sliderCurr = val;
                         });
                       }),
-                  Text('$_inversionLabel: ${_sliderCurr.floor()}')
+                  Text('$_inversionLabel: ${_sliderCurr.floor()}'),
+                  ElevatedButton(
+                      onPressed: invertSelectedImage,
+                      child: Text('Invert Image'))
                 ],
               )),
         ])));
@@ -107,14 +117,30 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<File> openFileManager() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
-
     if (result != null) {
       setState(() {
         imageFile = File(result.files.single.path!);
+        size =
+            ImageSizeGetter.getSize(FileInput(File(result.files.single.path!)));
+        _sliderMax = size.width.toDouble();
       });
-      print(imageFile.path);
     }
     return imageFile;
+  }
+
+  void invertSelectedImage() async {
+    Uint8List imgData = await imageFile.readAsBytes();
+    // String imgString = base64Encode(imgData);
+    // var decodedImg = base64Decode(imgString);
+    ui.Image img = await decodeImageFromList(imgData);
+    var newImg = invertImage(img);
+  }
+
+  Image imgGetter() {
+    if (invertedImgMemory == null)
+      return Image.file(imageFile);
+    else
+      return Image.memory(invertedImgMemory);
   }
 
   void setInversionShape(int selection) {
