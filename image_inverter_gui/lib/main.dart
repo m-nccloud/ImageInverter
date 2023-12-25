@@ -1,14 +1,10 @@
 import 'dart:convert';
 import 'dart:typed_data';
-
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:image_size_getter/image_size_getter.dart';
-import 'package:image_size_getter/file_input.dart';
-import 'inversion_functions.dart';
-import 'dart:io';
-import 'dart:async';
 import 'dart:ui' as ui;
+import 'dart:io';
+import 'package:image/image.dart' as img;
 
 void main() {
   runApp(const MyApp());
@@ -37,8 +33,9 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  File imageFile = File("");
-  var invertedImgMemory;
+  String imageFilePath = '';
+  Uint8List imgMemory = Uint8List(0);
+  Uint8List invertedImgMemory = Uint8List(0);
   late var size;
   int _inversionShape = 0;
   double _sliderCurr = 0;
@@ -94,7 +91,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Visibility(
-              visible: imageFile.path != "",
+              visible: imageFilePath.isNotEmpty,
               child: Column(
                 children: [
                   imgGetter(),
@@ -115,32 +112,83 @@ class _MyHomePageState extends State<MyHomePage> {
         ])));
   }
 
-  Future<File> openFileManager() async {
+  void openFileManager() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       setState(() {
-        imageFile = File(result.files.single.path!);
-        size =
-            ImageSizeGetter.getSize(FileInput(File(result.files.single.path!)));
-        _sliderMax = size.width.toDouble();
+        invertedImgMemory = Uint8List(0);
+        imageFilePath = result.files.single.path!;
       });
+      if (invertedImgMemory.isEmpty && imageFilePath.isNotEmpty) {
+        var decodedImg = await img.decodeImageFile(imageFilePath);
+        size = decodedImg?.width;
+        ui.Image uiImg = await convertImageToFlutterUi(decodedImg!);
+        final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+        setState(() {
+          size = decodedImg.width;
+          _sliderCurr = 0;
+          _sliderMax = size.toDouble();
+          imgMemory = Uint8List.view(pngBytes!.buffer);
+        });
+      } else if (invertedImgMemory.isNotEmpty) {
+        // var base64Img = base64Encode(invertedImgMemory);
+        // print(' $base64Img');
+        // return Image.memory(invertedImgMemory);
+      }
     }
-    return imageFile;
   }
 
   void invertSelectedImage() async {
-    Uint8List imgData = await imageFile.readAsBytes();
-    // String imgString = base64Encode(imgData);
-    // var decodedImg = base64Decode(imgString);
-    ui.Image img = await decodeImageFromList(imgData);
-    var newImg = invertImage(img);
+    setState(() {
+      // imageFilePath = File("");
+    });
   }
 
-  Image imgGetter() {
-    if (invertedImgMemory == null)
-      return Image.file(imageFile);
+  Future<ui.Image> convertImageToFlutterUi(img.Image image) async {
+    if (image.format != img.Format.uint8 || image.numChannels != 4) {
+      final cmd = img.Command()
+        ..image(image)
+        ..convert(format: img.Format.uint8, numChannels: 4);
+      final rgba8 = await cmd.getImageThread();
+      if (rgba8 != null) {
+        image = rgba8;
+      }
+    }
+
+    ui.ImmutableBuffer buffer =
+        await ui.ImmutableBuffer.fromUint8List(image.toUint8List());
+
+    ui.ImageDescriptor id = ui.ImageDescriptor.raw(buffer,
+        height: image.height,
+        width: image.width,
+        pixelFormat: ui.PixelFormat.rgba8888);
+
+    ui.Codec codec = await id.instantiateCodec(
+        targetHeight: image.height, targetWidth: image.width);
+
+    ui.FrameInfo fi = await codec.getNextFrame();
+    ui.Image uiImage = fi.image;
+
+    return uiImage;
+  }
+
+  Widget imgGetter() {
+    if (imgMemory.isNotEmpty)
+      return Image.memory(imgMemory);
     else
+      return Container(); /*
+    if (invertedImgMemory.isEmpty && imageFilePath.isNotEmpty) {
+      var decodedImg = await img.decodeImageFile(imageFilePath);
+      ui.Image uiImg = await convertImageToFlutterUi(decodedImg!);
+      final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+      return Image.memory(Uint8List.view(pngBytes!.buffer));
+    } else if (invertedImgMemory.isNotEmpty) {
+      var base64Img = base64Encode(invertedImgMemory);
+      print(' $base64Img');
       return Image.memory(invertedImgMemory);
+    } else {
+      return Container();
+    }*/
   }
 
   void setInversionShape(int selection) {
