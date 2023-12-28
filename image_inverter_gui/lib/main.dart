@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import 'dart:ui' as ui;
 import 'dart:io';
 import 'package:image/image.dart' as img;
+import 'package:image_inverter_gui_flutter/inversion_functions.dart';
 
 void main() {
   runApp(const MyApp());
@@ -35,7 +36,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String imageFilePath = '';
   Uint8List imgMemory = Uint8List(0);
-  Uint8List invertedImgMemory = Uint8List(0);
+  late var decodedImg;
   late var size;
   int _inversionShape = 0;
   double _sliderCurr = 0;
@@ -105,7 +106,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       }),
                   Text('$_inversionLabel: ${_sliderCurr.floor()}'),
                   ElevatedButton(
-                      onPressed: invertSelectedImage,
+                      onPressed: () => {invertSelectedImage()},
                       child: Text('Invert Image'))
                 ],
               )),
@@ -116,12 +117,10 @@ class _MyHomePageState extends State<MyHomePage> {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       setState(() {
-        invertedImgMemory = Uint8List(0);
         imageFilePath = result.files.single.path!;
       });
-      if (invertedImgMemory.isEmpty && imageFilePath.isNotEmpty) {
-        var decodedImg = await img.decodeImageFile(imageFilePath);
-        size = decodedImg?.width;
+      if (imageFilePath.isNotEmpty) {
+        decodedImg = await img.decodeImageFile(imageFilePath);
         ui.Image uiImg = await convertImageToFlutterUi(decodedImg!);
         final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
         setState(() {
@@ -130,16 +129,17 @@ class _MyHomePageState extends State<MyHomePage> {
           _sliderMax = size.toDouble();
           imgMemory = Uint8List.view(pngBytes!.buffer);
         });
-      } else if (invertedImgMemory.isNotEmpty) {
-        // var base64Img = base64Encode(invertedImgMemory);
-        // print(' $base64Img');
-        // return Image.memory(invertedImgMemory);
       }
     }
   }
 
   void invertSelectedImage() async {
-    setState(() {});
+    var invertedImg = invertImage(decodedImg);
+    ui.Image uiImg = await convertImageToFlutterUi(invertedImg);
+    final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+    setState(() {
+      imgMemory = Uint8List.view(pngBytes!.buffer);
+    });
   }
 
   Future<ui.Image> convertImageToFlutterUi(img.Image image) async {
