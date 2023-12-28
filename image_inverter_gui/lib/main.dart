@@ -139,9 +139,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void invertSelectedImage() async {
-    setState(() {
-      // imageFilePath = File("");
-    });
+    setState(() {});
   }
 
   Future<ui.Image> convertImageToFlutterUi(img.Image image) async {
@@ -172,23 +170,23 @@ class _MyHomePageState extends State<MyHomePage> {
     return uiImage;
   }
 
+  Future<img.Image> convertFlutterUiToImage(ui.Image uiImage) async {
+    final uiBytes = await uiImage.toByteData();
+
+    final image = img.Image.fromBytes(
+        width: uiImage.width,
+        height: uiImage.height,
+        bytes: uiBytes!.buffer,
+        numChannels: 4);
+
+    return image;
+  }
+
   Widget imgGetter() {
     if (imgMemory.isNotEmpty)
       return Image.memory(imgMemory);
     else
-      return Container(); /*
-    if (invertedImgMemory.isEmpty && imageFilePath.isNotEmpty) {
-      var decodedImg = await img.decodeImageFile(imageFilePath);
-      ui.Image uiImg = await convertImageToFlutterUi(decodedImg!);
-      final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
-      return Image.memory(Uint8List.view(pngBytes!.buffer));
-    } else if (invertedImgMemory.isNotEmpty) {
-      var base64Img = base64Encode(invertedImgMemory);
-      print(' $base64Img');
-      return Image.memory(invertedImgMemory);
-    } else {
       return Container();
-    }*/
   }
 
   void setInversionShape(int selection) {
