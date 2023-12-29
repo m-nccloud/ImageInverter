@@ -1,13 +1,20 @@
-import 'dart:ui' as ui;
-import 'dart:typed_data';
-import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 
-img.Image invertImage(img.Image inputImage) {
+img.Image invertImage(img.Image inputImage, int ratio) {
+  var Ratio = inputImage.height.toDouble() / inputImage.width.toDouble();
+  var hwRatio = ratio / 2;
+  var newRatio = Ratio * hwRatio;
+  var halfWidth = inputImage.width / 2;
+
   for (final pixel in inputImage) {
-    pixel.r = 255 - pixel.r;
-    pixel.g = 255 - pixel.g;
-    pixel.b = 255 - pixel.b;
+    if (pixel.x > halfWidth - hwRatio &&
+        pixel.x < halfWidth + hwRatio &&
+        pixel.y > halfWidth - newRatio &&
+        pixel.y < halfWidth + newRatio) {
+      pixel.r = pixel.maxChannelValue - pixel.r;
+      pixel.g = pixel.maxChannelValue - pixel.g;
+      pixel.b = pixel.maxChannelValue - pixel.b;
+    }
   }
   return inputImage;
 }

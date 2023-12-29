@@ -105,9 +105,16 @@ class _MyHomePageState extends State<MyHomePage> {
                         });
                       }),
                   Text('$_inversionLabel: ${_sliderCurr.floor()}'),
-                  ElevatedButton(
-                      onPressed: () => {invertSelectedImage()},
-                      child: Text('Invert Image'))
+                  Row(
+                    children: [
+                      ElevatedButton(
+                          onPressed: () => {invertSelectedImage()},
+                          child: Text('Invert Image')),
+                      ElevatedButton(
+                          onPressed: () => {saveInvertedImage()},
+                          child: Text('Save Image'))
+                    ],
+                  )
                 ],
               )),
         ])));
@@ -120,7 +127,8 @@ class _MyHomePageState extends State<MyHomePage> {
         imageFilePath = result.files.single.path!;
       });
       if (imageFilePath.isNotEmpty) {
-        decodedImg = await img.decodeImageFile(imageFilePath);
+        decodedImg =
+            await img.decodeImageFile(imageFilePath) ?? img.Image.empty();
         ui.Image uiImg = await convertImageToFlutterUi(decodedImg!);
         final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
         setState(() {
@@ -134,12 +142,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void invertSelectedImage() async {
-    var invertedImg = invertImage(decodedImg);
+    var invertedImg = invertImage(decodedImg, _sliderCurr.floor());
     ui.Image uiImg = await convertImageToFlutterUi(invertedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
       imgMemory = Uint8List.view(pngBytes!.buffer);
     });
+  }
+
+  void saveInvertedImage() async {
+    var savePath = await FilePicker.platform.saveFile();
+    print(savePath);
+    var saveImgFile = await File(savePath!).create(recursive: true);
+    await saveImgFile.writeAsBytes(imgMemory);
   }
 
   Future<ui.Image> convertImageToFlutterUi(img.Image image) async {
