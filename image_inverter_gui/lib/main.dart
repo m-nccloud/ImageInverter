@@ -36,6 +36,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String imageFilePath = '';
   Uint8List imgMemory = Uint8List(0);
+  late var originalImg;
   late var decodedImg;
   late var size;
   int _inversionShape = 0;
@@ -129,6 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (imageFilePath.isNotEmpty) {
         decodedImg =
             await img.decodeImageFile(imageFilePath) ?? img.Image.empty();
+        originalImg = decodedImg;
         ui.Image uiImg = await convertImageToFlutterUi(decodedImg!);
         final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
         setState(() {
@@ -142,6 +144,9 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void invertSelectedImage() async {
+    setState(() {
+      decodedImg = originalImg;
+    });
     var invertedImg = invertImage(decodedImg, _sliderCurr.floor());
     ui.Image uiImg = await convertImageToFlutterUi(invertedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
