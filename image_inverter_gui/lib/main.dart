@@ -34,15 +34,17 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String imageFilePath = '';
-  Uint8List imgMemory = Uint8List(0);
-  late var originalImg;
-  late var decodedImg;
-  late var size;
+  String _imgFilePath = '';
+  Uint8List _imgMemory = Uint8List(0);
+
+  bool _imageExceptionOccurred = false;
   int _inversionShape = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
   String _inversionLabel = "Inversion Width";
+  late var originalImg;
+  late var decodedImg;
+  late var size;
 
   @override
   Widget build(BuildContext context) {
@@ -60,6 +62,15 @@ class _MyHomePageState extends State<MyHomePage> {
                 },
                 child: Text('Select Image to Invert'),
               ),
+              Visibility(
+                  visible: _imageExceptionOccurred,
+                  child: Text(
+                    "Invalid Image Data, Please Re-Select",
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
+                  )),
               Text("Select Inversion Shape: \tBox"),
               Radio(
                   value: 0,
@@ -93,7 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           Visibility(
-              visible: imageFilePath.isNotEmpty,
+              visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
               child: Column(
                 children: [
                   imgGetter(),
@@ -125,33 +136,40 @@ class _MyHomePageState extends State<MyHomePage> {
     FilePickerResult? result = await FilePicker.platform.pickFiles();
     if (result != null) {
       setState(() {
-        imageFilePath = result.files.single.path!;
+        _imageExceptionOccurred = false;
+        _imgFilePath = result.files.single.path!;
       });
-      if (imageFilePath.isNotEmpty) {
-        decodedImg =
-            await img.decodeImageFile(imageFilePath) ?? img.Image.empty();
-        originalImg = decodedImg;
+      if (_imgFilePath.isNotEmpty) {
+        try {
+          decodedImg =
+              await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
+        } on img.ImageException {
+          setState(() {
+            _imageExceptionOccurred = true;
+          });
+          return;
+        }
         ui.Image uiImg = await convertImageToFlutterUi(decodedImg!);
         final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
         setState(() {
+          originalImg = decodedImg;
           size = decodedImg.width;
           _sliderCurr = 0;
           _sliderMax = size.toDouble();
-          imgMemory = Uint8List.view(pngBytes!.buffer);
+          _imgMemory = Uint8List.view(pngBytes!.buffer);
         });
       }
     }
   }
 
-  void invertSelectedImage() async {
-    setState(() {
-      decodedImg = originalImg;
-    });
-    var invertedImg = invertImage(decodedImg, _sliderCurr.floor());
+  void invertSelectedImage({accumulate = false}) async {
+    print(accumulate);
+    var invertedImg =
+        invertImage(accumulate ? decodedImg : originalImg, _sliderCurr.floor());
     ui.Image uiImg = await convertImageToFlutterUi(invertedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
-      imgMemory = Uint8List.view(pngBytes!.buffer);
+      _imgMemory = Uint8List.view(pngBytes!.buffer);
     });
   }
 
@@ -159,7 +177,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var savePath = await FilePicker.platform.saveFile();
     print(savePath);
     var saveImgFile = await File(savePath!).create(recursive: true);
-    await saveImgFile.writeAsBytes(imgMemory);
+    await saveImgFile.writeAsBytes(_imgMemory);
   }
 
   Future<ui.Image> convertImageToFlutterUi(img.Image image) async {
@@ -203,8 +221,8 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget imgGetter() {
-    if (imgMemory.isNotEmpty)
-      return Image.memory(imgMemory);
+    if (_imgMemory.isNotEmpty)
+      return Image.memory(_imgMemory);
     else
       return Container();
   }
