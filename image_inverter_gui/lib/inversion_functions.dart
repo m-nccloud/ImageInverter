@@ -1,6 +1,6 @@
 import 'package:image/image.dart' as img;
 
-img.Image invertImage(img.Image inputImage, int ratio) {
+void invertImage(img.Image inputImage, int ratio) {
   var dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
   var hwRatio = ratio / 2;
   var newRatio = dumbRatio * hwRatio;
@@ -17,5 +17,4 @@ img.Image invertImage(img.Image inputImage, int ratio) {
       pixel.b = pixel.maxChannelValue - pixel.b;
     }
   }
-  return inputImage;
 }

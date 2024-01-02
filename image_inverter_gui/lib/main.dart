@@ -38,13 +38,14 @@ class _MyHomePageState extends State<MyHomePage> {
   Uint8List _imgMemory = Uint8List(0);
 
   bool _imageExceptionOccurred = false;
+  bool _accumulate = false;
   int _inversionShape = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
   String _inversionLabel = "Inversion Width";
-  late var originalImg;
-  late var decodedImg;
-  late var size;
+  late ui.Codec codec;
+  late img.Image decodedImg;
+  late int size;
 
   @override
   Widget build(BuildContext context) {
@@ -71,36 +72,51 @@ class _MyHomePageState extends State<MyHomePage> {
                         fontWeight: FontWeight.bold,
                         fontSize: 16),
                   )),
-              Text("Select Inversion Shape: \tBox"),
-              Radio(
-                  value: 0,
-                  groupValue: _inversionShape,
-                  onChanged: (value) {
-                    setState(() {
-                      _inversionShape = value!;
-                      _inversionLabel = "Inversion Width";
-                    });
-                  }),
-              Text("Rect"),
-              Radio(
-                  value: 1,
-                  groupValue: _inversionShape,
-                  onChanged: (value) {
-                    setState(() {
-                      _inversionShape = value!;
-                      _inversionLabel = "Inversion Width";
-                    });
-                  }),
-              Text("Circle"),
-              Radio(
-                  value: 2,
-                  groupValue: _inversionShape,
-                  onChanged: (value) {
-                    setState(() {
-                      _inversionShape = value!;
-                      _inversionLabel = "Inversion Radius";
-                    });
-                  })
+              Visibility(
+                  visible:
+                      (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
+                  child: Row(
+                    children: [
+                      Text("Inversion Shape: \tBox"),
+                      Radio(
+                          value: 0,
+                          groupValue: _inversionShape,
+                          onChanged: (value) {
+                            setState(() {
+                              _inversionShape = value!;
+                              _inversionLabel = "Inversion Width";
+                            });
+                          }),
+                      Text("Rect"),
+                      Radio(
+                          value: 1,
+                          groupValue: _inversionShape,
+                          onChanged: (value) {
+                            setState(() {
+                              _inversionShape = value!;
+                              _inversionLabel = "Inversion Width";
+                            });
+                          }),
+                      Text("Circle"),
+                      Radio(
+                          value: 2,
+                          groupValue: _inversionShape,
+                          onChanged: (value) {
+                            setState(() {
+                              _inversionShape = value!;
+                              _inversionLabel = "Inversion Radius";
+                            });
+                          }),
+                      Text("Accumulate"),
+                      Checkbox(
+                          value: _accumulate,
+                          onChanged: (bool? value) => {
+                                setState(() {
+                                  _accumulate = value!;
+                                })
+                              })
+                    ],
+                  ))
             ],
           ),
           Visibility(
@@ -119,6 +135,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   Text('$_inversionLabel: ${_sliderCurr.floor()}'),
                   Row(
                     children: [
+                      ElevatedButton(
+                          onPressed: () => {clearInversion()},
+                          child: Text('Clear Inversion')),
                       ElevatedButton(
                           onPressed: () => {invertSelectedImage()},
                           child: Text('Invert Image')),
@@ -149,24 +168,26 @@ class _MyHomePageState extends State<MyHomePage> {
           });
           return;
         }
-        ui.Image uiImg = await convertImageToFlutterUi(decodedImg!);
+        ui.Image uiImg = await convertImageToFlutterUi(decodedImg);
         final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
         setState(() {
-          originalImg = decodedImg;
           size = decodedImg.width;
           _sliderCurr = 0;
           _sliderMax = size.toDouble();
           _imgMemory = Uint8List.view(pngBytes!.buffer);
         });
+        print(base64Encode(_imgMemory));
       }
     }
   }
 
-  void invertSelectedImage({accumulate = false}) async {
-    print(accumulate);
-    var invertedImg =
-        invertImage(accumulate ? decodedImg : originalImg, _sliderCurr.floor());
-    ui.Image uiImg = await convertImageToFlutterUi(invertedImg);
+  void invertSelectedImage() async {
+    var inputImage = _accumulate
+        ? decodedImg
+        : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
+
+    invertImage(inputImage, _sliderCurr.floor());
+    ui.Image uiImg = await convertImageToFlutterUi(inputImage);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
@@ -175,9 +196,18 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void saveInvertedImage() async {
     var savePath = await FilePicker.platform.saveFile();
-    print(savePath);
     var saveImgFile = await File(savePath!).create(recursive: true);
     await saveImgFile.writeAsBytes(_imgMemory);
+  }
+
+  void clearInversion() async {
+    var uneditedImg =
+        await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
+    ui.Image uiImg = await convertImageToFlutterUi(uneditedImg);
+    final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+    setState(() {
+      _imgMemory = Uint8List.view(pngBytes!.buffer);
+    });
   }
 
   Future<ui.Image> convertImageToFlutterUi(img.Image image) async {
@@ -198,13 +228,16 @@ class _MyHomePageState extends State<MyHomePage> {
         height: image.height,
         width: image.width,
         pixelFormat: ui.PixelFormat.rgba8888);
-
-    ui.Codec codec = await id.instantiateCodec(
-        targetHeight: image.height, targetWidth: image.width);
-
+    try {
+      codec = await id.instantiateCodec(
+          targetHeight: image.height, targetWidth: image.width);
+    } on Exception {
+      setState(() {
+        return;
+      });
+    }
     ui.FrameInfo fi = await codec.getNextFrame();
     ui.Image uiImage = fi.image;
-
     return uiImage;
   }
 
