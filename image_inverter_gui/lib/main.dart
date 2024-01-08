@@ -36,7 +36,6 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   String _imgFilePath = '';
   Uint8List _imgMemory = Uint8List(0);
-
   bool _imageExceptionOccurred = false;
   bool _accumulate = false;
   int _inversionShape = 0;
@@ -46,6 +45,33 @@ class _MyHomePageState extends State<MyHomePage> {
   late ui.Codec codec;
   late img.Image decodedImg;
   late int size;
+  final List<int> imgCoords = List<int>.filled(2, 0);
+
+  double _mouseX = 0;
+  double _mouseY = 0;
+  double _imgPOSX = 0;
+  double _imgPOSY = 0;
+  double _xInImage = 0;
+  double _yInImage = 0;
+
+  final _keyImage = GlobalKey();
+
+  void _updateLocation(PointerEvent details) {
+    setState(() {
+      RenderBox msRgn =
+          _keyImage.currentContext!.findRenderObject() as RenderBox;
+
+      final imgPostion = msRgn.localToGlobal(Offset.zero);
+      _imgPOSX = imgPostion.dx;
+      _imgPOSY = imgPostion.dy;
+      _mouseX = details.position.dx;
+      _mouseY = details.position.dy;
+      _xInImage = _mouseX - _imgPOSX;
+      _yInImage = _mouseY - _imgPOSY;
+      imgCoords[0] = _xInImage.floor();
+      imgCoords[1] = _yInImage.floor();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -108,6 +134,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             });
                           }),
                       Text("Accumulate"),
+                      Text("$_xInImage $_yInImage"),
                       Checkbox(
                           value: _accumulate,
                           onChanged: (bool? value) => {
@@ -123,7 +150,10 @@ class _MyHomePageState extends State<MyHomePage> {
               visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
               child: Column(
                 children: [
-                  imgGetter(),
+                  Listener(
+                      key: _keyImage,
+                      onPointerDown: _updateLocation,
+                      child: imgGetter()),
                   Slider(
                       value: _sliderCurr,
                       max: _sliderMax,
@@ -186,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
         ? decodedImg
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
 
-    invertImage(inputImage, _sliderCurr.floor());
+    invertImage(inputImage, _sliderCurr.floor(), imgCoords);
     ui.Image uiImg = await convertImageToFlutterUi(inputImage);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
