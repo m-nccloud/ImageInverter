@@ -45,7 +45,7 @@ class _MyHomePageState extends State<MyHomePage> {
   late ui.Codec codec;
   late img.Image decodedImg;
   late int size;
-  final List<int> imgCoords = List<int>.filled(2, 0);
+  final List<int> imgCoords = List<int>.filled(2, -1);
 
   double _mouseX = 0;
   double _mouseY = 0;
@@ -237,6 +237,7 @@ class _MyHomePageState extends State<MyHomePage> {
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
+      decodedImg = uneditedImg;
     });
   }
 
