@@ -40,6 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _accumulate = false;
   int _inversionShape = 0;
   double _sliderCurr = 0;
+  double _pixelSliderCurr = 255;
+  int _pixelSliderCurrInt = 255;
   double _sliderMax = 0;
   String _inversionLabel = "Inversion Width";
   late ui.Codec codec;
@@ -134,14 +136,25 @@ class _MyHomePageState extends State<MyHomePage> {
                             });
                           }),
                       Text("Accumulate"),
-                      Text("$_xInImage $_yInImage"),
                       Checkbox(
                           value: _accumulate,
                           onChanged: (bool? value) => {
                                 setState(() {
                                   _accumulate = value!;
                                 })
-                              })
+                              }),
+                      Text("Inversion Center: $_xInImage $_yInImage"),
+                      Slider(
+                          value: _pixelSliderCurr,
+                          max: 255,
+                          min: 0,
+                          onChanged: (val) {
+                            setState(() {
+                              _pixelSliderCurr = val;
+                              _pixelSliderCurrInt = val.ceil();
+                            });
+                          }),
+                      Text("Pixel Subtract Value: $_pixelSliderCurrInt")
                     ],
                   ))
             ],
@@ -216,7 +229,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ? decodedImg
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
 
-    invertImage(inputImage, _sliderCurr.floor(), imgCoords);
+    invertImage(
+        inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurr.ceil());
     ui.Image uiImg = await convertImageToFlutterUi(inputImage);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {

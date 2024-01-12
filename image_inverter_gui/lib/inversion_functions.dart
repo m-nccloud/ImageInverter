@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 
-void invertImage(img.Image inputImage, int ratio, List<int> coords) {
+void invertImage(
+    img.Image inputImage, int ratio, List<int> coords, int pixelSubtractValue) {
   var dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
   var hwRatio = ratio / 2;
   var newRatio = dumbRatio * hwRatio;
@@ -19,9 +20,9 @@ void invertImage(img.Image inputImage, int ratio, List<int> coords) {
           pixel.x < 0 ||
           pixel.y > inputImage.height ||
           pixel.y < 0) continue;
-      pixel.r = pixel.maxChannelValue - pixel.r;
-      pixel.g = pixel.maxChannelValue - pixel.g;
-      pixel.b = pixel.maxChannelValue - pixel.b;
+      pixel.r = (pixelSubtractValue - pixel.r).abs();
+      pixel.g = (pixelSubtractValue - pixel.g).abs();
+      pixel.b = (pixelSubtractValue - pixel.b).abs();
     }
   } else {
     for (final pixel in inputImage) {
@@ -29,9 +30,9 @@ void invertImage(img.Image inputImage, int ratio, List<int> coords) {
           pixel.x < centerX + hwRatio &&
           pixel.y > centerY - newRatio &&
           pixel.y < centerY + newRatio) {
-        pixel.r = pixel.maxChannelValue - pixel.r;
-        pixel.g = pixel.maxChannelValue - pixel.g;
-        pixel.b = pixel.maxChannelValue - pixel.b;
+        pixel.r = (pixelSubtractValue - pixel.r).abs();
+        pixel.g = (pixelSubtractValue - pixel.g).abs();
+        pixel.b = (pixelSubtractValue - pixel.b).abs();
       }
     }
   }
