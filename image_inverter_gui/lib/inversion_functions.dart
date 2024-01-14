@@ -11,7 +11,8 @@ void invertImage(
   final int centerX = coords[0] != -1 ? coords[0] : halfWidth.floor();
   final int centerY = coords[1] != -1 ? coords[1] : halfHeight.floor();
 
-  if (coords[0] == halfWidth.floor() && coords[1] == halfHeight.floor()) {
+  if (centerX == halfWidth.floor() && centerY == halfHeight.floor()) {
+    print("HEED");
     final range = inputImage.getRange(centerX - hwRatio.floor(),
         centerY - newRatio.floor(), hwRatio.floor() * 2, newRatio.floor() * 2);
     while (range.moveNext()) {

@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
@@ -219,7 +218,6 @@ class _MyHomePageState extends State<MyHomePage> {
           _sliderMax = size.toDouble();
           _imgMemory = Uint8List.view(pngBytes!.buffer);
         });
-        print(base64Encode(_imgMemory));
       }
     }
   }
