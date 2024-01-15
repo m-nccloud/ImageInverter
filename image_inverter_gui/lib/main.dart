@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:ui' as ui;
 import 'dart:io';
 import 'package:image/image.dart' as img;
@@ -143,6 +144,9 @@ class _MyHomePageState extends State<MyHomePage> {
                                 })
                               }),
                       Text("Inversion Center: $_xInImage $_yInImage"),
+                      ElevatedButton(
+                          onPressed: () => {resetInversionCenter()},
+                          child: Text("Reset Inversion Center")),
                       Slider(
                           value: _pixelSliderCurr,
                           max: 255,
@@ -165,7 +169,17 @@ class _MyHomePageState extends State<MyHomePage> {
                   Listener(
                       key: _keyImage,
                       onPointerDown: _updateLocation,
-                      child: imgGetter()),
+                      child: Stack(
+                        children: [
+                          imgGetter(),
+                          Positioned(
+                              top: _yInImage -
+                                  15, //for mouse pointer (TODO: add conditional for mobile devices)
+                              left: _xInImage - 15,
+                              child: SvgPicture.asset(
+                                  'assets/svgs/circle-dashed-svgrepo-com.svg'))
+                        ],
+                      )),
                   Slider(
                       value: _sliderCurr,
                       max: _sliderMax,
@@ -217,6 +231,8 @@ class _MyHomePageState extends State<MyHomePage> {
           _sliderCurr = 0;
           _sliderMax = size.toDouble();
           _imgMemory = Uint8List.view(pngBytes!.buffer);
+          _xInImage = decodedImg.width / 2;
+          _yInImage = decodedImg.height / 2;
         });
       }
     }
@@ -250,6 +266,15 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
       decodedImg = uneditedImg;
+    });
+  }
+
+  void resetInversionCenter() {
+    setState(() {
+      _yInImage = decodedImg.height / 2;
+      _xInImage = decodedImg.width / 2;
+      imgCoords[0] = _xInImage.floor();
+      imgCoords[1] = _yInImage.floor();
     });
   }
 
