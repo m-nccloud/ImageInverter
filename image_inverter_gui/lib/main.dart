@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'dart:io';
 import 'package:image/image.dart' as img;
 import 'package:image_inverter_gui_flutter/inversion_functions.dart';
+import 'enums.dart';
 
 void main() {
   runApp(const MyApp());
@@ -40,22 +41,21 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _accumulate = false;
   int _inversionShape = 0;
   double _sliderCurr = 0;
-  double _pixelSliderCurr = 255;
-  int _pixelSliderCurrInt = 255;
   double _sliderMax = 0;
   String _inversionLabel = "Inversion Width";
-  late ui.Codec codec;
-  late img.Image decodedImg;
-  late int size;
-  final List<int> imgCoords = List<int>.filled(2, -1);
-
   double _mouseX = 0;
   double _mouseY = 0;
   double _imgPOSX = 0;
   double _imgPOSY = 0;
   double _xInImage = 0;
   double _yInImage = 0;
-
+  InversionShape _shape = InversionShape.rect;
+  var _pixelSliderCurr = [255.0, 255.0, 255.0];
+  var _pixelSliderCurrInt = [255, 255, 255];
+  late ui.Codec codec;
+  late img.Image decodedImg;
+  late int size;
+  final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
 
   void _updateLocation(PointerEvent details) {
@@ -105,7 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
                   child: Row(
                     children: [
-                      Text("Inversion Shape: \tBox"),
+                      Text("Inversion Shape: \tRect"),
                       Radio(
                           value: 0,
                           groupValue: _inversionShape,
@@ -113,9 +113,10 @@ class _MyHomePageState extends State<MyHomePage> {
                             setState(() {
                               _inversionShape = value!;
                               _inversionLabel = "Inversion Width";
+                              _shape = InversionShape.rect;
                             });
                           }),
-                      Text("Rect"),
+                      Text("Box"),
                       Radio(
                           value: 1,
                           groupValue: _inversionShape,
@@ -123,6 +124,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             setState(() {
                               _inversionShape = value!;
                               _inversionLabel = "Inversion Width";
+                              _shape = InversionShape.box;
                             });
                           }),
                       Text("Circle"),
@@ -133,6 +135,7 @@ class _MyHomePageState extends State<MyHomePage> {
                             setState(() {
                               _inversionShape = value!;
                               _inversionLabel = "Inversion Radius";
+                              _shape = InversionShape.circle;
                             });
                           }),
                       Text("Accumulate"),
@@ -147,17 +150,46 @@ class _MyHomePageState extends State<MyHomePage> {
                       ElevatedButton(
                           onPressed: () => {resetInversionCenter()},
                           child: Text("Reset Inversion Center")),
-                      Slider(
-                          value: _pixelSliderCurr,
-                          max: 255,
-                          min: 0,
-                          onChanged: (val) {
-                            setState(() {
-                              _pixelSliderCurr = val;
-                              _pixelSliderCurrInt = val.ceil();
-                            });
-                          }),
-                      Text("Pixel Subtract Value: $_pixelSliderCurrInt")
+                      Column(
+                        children: [
+                          Slider(
+                              value: _pixelSliderCurr[0],
+                              max: 255,
+                              min: 0,
+                              onChanged: (val) {
+                                setState(() {
+                                  _pixelSliderCurr[0] = val;
+                                  _pixelSliderCurrInt[0] = val.ceil();
+                                });
+                              }),
+                          Text(
+                              "Pixel Red Subtract Value: $_pixelSliderCurrInt[0]"),
+                          Slider(
+                              value: _pixelSliderCurr[1],
+                              max: 255,
+                              min: 0,
+                              onChanged: (val) {
+                                setState(() {
+                                  _pixelSliderCurr[1] = val;
+                                  _pixelSliderCurrInt[1] = val.ceil();
+                                });
+                              }),
+                          Text(
+                              "Pixel Green Subtract Value: $_pixelSliderCurrInt[1]"),
+                          Slider(
+                              value: _pixelSliderCurr[2],
+                              max: 255,
+                              min: 0,
+                              onChanged: (val) {
+                                setState(() {
+                                  _pixelSliderCurr[2] = val;
+                                  _pixelSliderCurrInt[2] = val.ceil();
+                                });
+                              }),
+                          Text(
+                              "Pixel Blue Subtract Value: $_pixelSliderCurrInt[2]"),
+                        ],
+                      )
                     ],
                   ))
             ],
@@ -243,8 +275,8 @@ class _MyHomePageState extends State<MyHomePage> {
         ? decodedImg
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
 
-    invertImage(
-        inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurr.ceil());
+    invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
+        _shape);
     ui.Image uiImg = await convertImageToFlutterUi(inputImage);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
