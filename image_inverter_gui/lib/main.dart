@@ -286,8 +286,10 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void saveInvertedImage() async {
     var savePath = await FilePicker.platform.saveFile();
-    var saveImgFile = await File(savePath!).create(recursive: true);
-    await saveImgFile.writeAsBytes(_imgMemory);
+    if (savePath != null) {
+      var saveImgFile = await File(savePath!).create(recursive: true);
+      await saveImgFile.writeAsBytes(_imgMemory);
+    }
   }
 
   void clearInversion() async {
