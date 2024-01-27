@@ -12,6 +12,39 @@ void main() {
   runApp(const MyApp());
 }
 
+class ImgPainter extends CustomPainter {
+  int centerX;
+  int centerY;
+  var magnitude = 0.0;
+  var rectHeight = 0.0;
+  var shape = InversionShape.rect;
+
+  ImgPainter(
+      this.centerX, this.centerY, this.magnitude, this.rectHeight, this.shape);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final myPaint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1;
+    if (shape == InversionShape.circle)
+      canvas.drawCircle(Offset(centerX.toDouble(), centerY.toDouble()),
+          magnitude / 2, myPaint);
+    else
+      canvas.drawRect(
+          Rect.fromCenter(
+              center: Offset(centerX.toDouble(), centerY.toDouble()),
+              width: magnitude,
+              height: rectHeight),
+          myPaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant ImgPainter oldDelegate) {
+    return oldDelegate.centerX != centerX || oldDelegate.centerY != centerY;
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -49,12 +82,14 @@ class _MyHomePageState extends State<MyHomePage> {
   double _imgPOSY = 0;
   double _xInImage = 0;
   double _yInImage = 0;
+  double _rectHeight = 0.0;
   InversionShape _shape = InversionShape.rect;
   var _pixelSliderCurr = [255.0, 255.0, 255.0];
   var _pixelSliderCurrInt = [255, 255, 255];
   late ui.Codec codec;
   late img.Image decodedImg;
   late int size;
+  late double rectRatio;
   final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
 
@@ -275,12 +310,13 @@ class _MyHomePageState extends State<MyHomePage> {
         ? decodedImg
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
 
-    invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
-        _shape);
+    var rHeight = invertImage(inputImage, _sliderCurr.floor(), imgCoords,
+        _pixelSliderCurrInt, _shape);
     ui.Image uiImg = await convertImageToFlutterUi(inputImage);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
+      _rectHeight = rHeight;
     });
   }
 
@@ -357,25 +393,13 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget imgGetter() {
     if (_imgMemory.isNotEmpty)
-      return CustomPaint(child:Image.memory(_imgMemory) painter: ImgPainter()) ;
+      return CustomPaint(
+          child: Image.memory(_imgMemory),
+          foregroundPainter: ImgPainter(
+              imgCoords[0], imgCoords[1], _sliderCurr, _rectHeight, _shape));
     else
       return Container();
   }
-
-class DemoPainter extends CustomPainter {
-  
-  @override
-  void paint(Canvas canvas, Size size) {
-    // TODO: implement paint
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    // TODO: implement shouldRepaint
-    throw UnimplementedError();
-  }
-  
-}
 
   void setInversionShape(int selection) {
     _inversionShape = selection;

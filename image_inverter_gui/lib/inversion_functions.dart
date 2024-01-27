@@ -2,11 +2,11 @@ import 'dart:math' as math;
 import 'package:image/image.dart' as img;
 import 'enums.dart';
 
-void invertImage(img.Image inputImage, int ratio, List<int> coords,
+double invertImage(img.Image inputImage, int magnitude, List<int> coords,
     List<int> pixelSubtractValue, InversionShape shape) {
   var dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
-  var hwRatio = ratio / 2;
-  var newRatio = dumbRatio * hwRatio;
+  var halfMag = magnitude / 2;
+  var halfScaledH = dumbRatio * halfMag;
   var halfWidth = inputImage.width / 2;
   var halfHeight = inputImage.height / 2;
   final int centerX = coords[0] != -1 ? coords[0] : halfWidth.floor();
@@ -18,10 +18,10 @@ void invertImage(img.Image inputImage, int ratio, List<int> coords,
         if (centerX == halfWidth.floor() && centerY == halfHeight.floor()) {
           print("HEED");
           final range = inputImage.getRange(
-              centerX - hwRatio.floor(),
-              centerY - newRatio.floor(),
-              hwRatio.floor() * 2,
-              newRatio.floor() * 2);
+              centerX - halfMag.floor(),
+              centerY - halfScaledH.floor(),
+              halfMag.floor() * 2,
+              halfScaledH.floor() * 2);
           while (range.moveNext()) {
             final pixel = range.current;
             if (pixel.x > inputImage.width ||
@@ -34,10 +34,10 @@ void invertImage(img.Image inputImage, int ratio, List<int> coords,
           }
         } else {
           for (final pixel in inputImage) {
-            if (pixel.x > centerX - hwRatio &&
-                pixel.x < centerX + hwRatio &&
-                pixel.y > centerY - newRatio &&
-                pixel.y < centerY + newRatio) {
+            if (pixel.x > centerX - halfMag &&
+                pixel.x < centerX + halfMag &&
+                pixel.y > centerY - halfScaledH &&
+                pixel.y < centerY + halfScaledH) {
               pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
               pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
               pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
@@ -48,10 +48,10 @@ void invertImage(img.Image inputImage, int ratio, List<int> coords,
     case InversionShape.box:
       {
         for (final pixel in inputImage) {
-          if (pixel.x > centerX - hwRatio &&
-              pixel.x < centerX + hwRatio &&
-              pixel.y > centerY - hwRatio &&
-              pixel.y < centerY + hwRatio) {
+          if (pixel.x > centerX - halfMag &&
+              pixel.x < centerX + halfMag &&
+              pixel.y > centerY - halfMag &&
+              pixel.y < centerY + halfMag) {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
             pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
@@ -62,7 +62,7 @@ void invertImage(img.Image inputImage, int ratio, List<int> coords,
       {
         for (final pixel in inputImage) {
           if (math.pow(pixel.x - centerX, 2) + math.pow(pixel.y - centerY, 2) <=
-              math.pow(ratio / 2.floor(), 2)) {
+              math.pow(magnitude / 2.floor(), 2)) {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
             pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
@@ -70,4 +70,6 @@ void invertImage(img.Image inputImage, int ratio, List<int> coords,
         }
       }
   }
+
+  return halfScaledH * 2;
 }
