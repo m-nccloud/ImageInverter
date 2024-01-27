@@ -357,10 +357,25 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget imgGetter() {
     if (_imgMemory.isNotEmpty)
-      return Image.memory(_imgMemory);
+      return CustomPaint(child:Image.memory(_imgMemory) painter: ImgPainter()) ;
     else
       return Container();
   }
+
+class DemoPainter extends CustomPainter {
+  
+  @override
+  void paint(Canvas canvas, Size size) {
+    // TODO: implement paint
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    // TODO: implement shouldRepaint
+    throw UnimplementedError();
+  }
+  
+}
 
   void setInversionShape(int selection) {
     _inversionShape = selection;
