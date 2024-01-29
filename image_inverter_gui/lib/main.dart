@@ -231,45 +231,47 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
           Visibility(
               visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
-              child: Column(
-                children: [
-                  Listener(
-                      key: _keyImage,
-                      onPointerDown: _updateLocation,
-                      child: Stack(
-                        children: [
-                          imgGetter(),
-                          Positioned(
-                              top: _yInImage -
-                                  15, //for mouse pointer (TODO: add conditional for mobile devices)
-                              left: _xInImage - 15,
-                              child: SvgPicture.asset(
-                                  'assets/svgs/circle-dashed-svgrepo-com.svg'))
-                        ],
-                      )),
-                  Slider(
-                      value: _sliderCurr,
-                      max: _sliderMax,
-                      onChanged: (val) {
-                        setState(() {
-                          _sliderCurr = val;
-                        });
-                      }),
-                  Text('$_inversionLabel: ${_sliderCurr.floor()}'),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                          onPressed: () => {clearInversion()},
-                          child: Text('Clear Inversion')),
-                      ElevatedButton(
-                          onPressed: () => {invertSelectedImage()},
-                          child: Text('Invert Image')),
-                      ElevatedButton(
-                          onPressed: () => {saveInvertedImage()},
-                          child: Text('Save Image'))
-                    ],
-                  )
-                ],
+              child: Expanded(
+                child: Column(
+                  children: [
+                    Listener(
+                        key: _keyImage,
+                        onPointerDown: _updateLocation,
+                        child: Stack(
+                          children: [
+                            imgGetter(),
+                            Positioned(
+                                top: _yInImage -
+                                    15, //for mouse pointer (TODO: add conditional for mobile devices)
+                                left: _xInImage - 15,
+                                child: SvgPicture.asset(
+                                    'assets/svgs/circle-dashed-svgrepo-com.svg'))
+                          ],
+                        )),
+                    Slider(
+                        value: _sliderCurr,
+                        max: _sliderMax,
+                        onChanged: (val) {
+                          setState(() {
+                            _sliderCurr = val;
+                          });
+                        }),
+                    Text('$_inversionLabel: ${_sliderCurr.floor()}'),
+                    Row(
+                      children: [
+                        ElevatedButton(
+                            onPressed: () => {clearInversion()},
+                            child: Text('Clear Inversion')),
+                        ElevatedButton(
+                            onPressed: () => {invertSelectedImage()},
+                            child: Text('Invert Image')),
+                        ElevatedButton(
+                            onPressed: () => {saveInvertedImage()},
+                            child: Text('Save Image'))
+                      ],
+                    )
+                  ],
+                ),
               )),
         ])));
   }
@@ -323,7 +325,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void saveInvertedImage() async {
     var savePath = await FilePicker.platform.saveFile();
     if (savePath != null) {
-      var saveImgFile = await File(savePath!).create(recursive: true);
+      var saveImgFile = await File(savePath).create(recursive: true);
       await saveImgFile.writeAsBytes(_imgMemory);
     }
   }
