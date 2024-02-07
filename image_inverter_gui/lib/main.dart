@@ -27,16 +27,17 @@ class ImgPainter extends CustomPainter {
     final myPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
-    if (shape == InversionShape.circle)
+    if (shape == InversionShape.circle) {
       canvas.drawCircle(Offset(centerX.toDouble(), centerY.toDouble()),
           magnitude / 2, myPaint);
-    else
+    } else {
       canvas.drawRect(
           Rect.fromCenter(
               center: Offset(centerX.toDouble(), centerY.toDouble()),
               width: magnitude,
               height: rectHeight),
           myPaint);
+    }
   }
 
   @override
@@ -116,164 +117,165 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text('Image Inverter'),
         ),
-        body: Center(
-            child: Column(children: [
-          Row(
-            children: [
-              ElevatedButton(
-                onPressed: () {
-                  openFileManager();
-                },
-                child: Text('Select Image to Invert'),
-              ),
-              Visibility(
-                  visible: _imageExceptionOccurred,
-                  child: Text(
-                    "Invalid Image Data, Please Re-Select",
-                    style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16),
-                  )),
-              Visibility(
-                  visible:
-                      (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
-                  child: Row(
-                    children: [
-                      Text("Inversion Shape: \tRect"),
-                      Radio(
-                          value: 0,
-                          groupValue: _inversionShape,
-                          onChanged: (value) {
-                            setState(() {
-                              _inversionShape = value!;
-                              _inversionLabel = "Inversion Width";
-                              _shape = InversionShape.rect;
-                            });
-                          }),
-                      Text("Box"),
-                      Radio(
-                          value: 1,
-                          groupValue: _inversionShape,
-                          onChanged: (value) {
-                            setState(() {
-                              _inversionShape = value!;
-                              _inversionLabel = "Inversion Width";
-                              _shape = InversionShape.box;
-                            });
-                          }),
-                      Text("Circle"),
-                      Radio(
-                          value: 2,
-                          groupValue: _inversionShape,
-                          onChanged: (value) {
-                            setState(() {
-                              _inversionShape = value!;
-                              _inversionLabel = "Inversion Radius";
-                              _shape = InversionShape.circle;
-                            });
-                          }),
-                      Text("Accumulate"),
-                      Checkbox(
-                          value: _accumulate,
-                          onChanged: (bool? value) => {
-                                setState(() {
-                                  _accumulate = value!;
-                                })
-                              }),
-                      Text("Inversion Center: $_xInImage $_yInImage"),
-                      ElevatedButton(
-                          onPressed: () => {resetInversionCenter()},
-                          child: Text("Reset Inversion Center")),
-                      Column(
-                        children: [
-                          Slider(
-                              value: _pixelSliderCurr[0],
-                              max: 255,
-                              min: 0,
-                              onChanged: (val) {
-                                setState(() {
-                                  _pixelSliderCurr[0] = val;
-                                  _pixelSliderCurrInt[0] = val.ceil();
-                                });
-                              }),
-                          Text(
-                              "Pixel Red Subtract Value: $_pixelSliderCurrInt[0]"),
-                          Slider(
-                              value: _pixelSliderCurr[1],
-                              max: 255,
-                              min: 0,
-                              onChanged: (val) {
-                                setState(() {
-                                  _pixelSliderCurr[1] = val;
-                                  _pixelSliderCurrInt[1] = val.ceil();
-                                });
-                              }),
-                          Text(
-                              "Pixel Green Subtract Value: $_pixelSliderCurrInt[1]"),
-                          Slider(
-                              value: _pixelSliderCurr[2],
-                              max: 255,
-                              min: 0,
-                              onChanged: (val) {
-                                setState(() {
-                                  _pixelSliderCurr[2] = val;
-                                  _pixelSliderCurrInt[2] = val.ceil();
-                                });
-                              }),
-                          Text(
-                              "Pixel Blue Subtract Value: $_pixelSliderCurrInt[2]"),
-                        ],
-                      )
-                    ],
-                  ))
-            ],
-          ),
-          Visibility(
-              visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
-              child: Expanded(
-                child: Column(
-                  children: [
-                    Listener(
-                        key: _keyImage,
-                        onPointerDown: _updateLocation,
-                        child: Stack(
-                          children: [
-                            imgGetter(),
-                            Positioned(
-                                top: _yInImage -
-                                    15, //for mouse pointer (TODO: add conditional for mobile devices)
-                                left: _xInImage - 15,
-                                child: SvgPicture.asset(
-                                    'assets/svgs/circle-dashed-svgrepo-com.svg'))
-                          ],
-                        )),
-                    Slider(
-                        value: _sliderCurr,
-                        max: _sliderMax,
-                        onChanged: (val) {
-                          setState(() {
-                            _sliderCurr = val;
-                          });
-                        }),
-                    Text('$_inversionLabel: ${_sliderCurr.floor()}'),
-                    Row(
-                      children: [
-                        ElevatedButton(
-                            onPressed: () => {clearInversion()},
-                            child: Text('Clear Inversion')),
-                        ElevatedButton(
-                            onPressed: () => {invertSelectedImage()},
-                            child: Text('Invert Image')),
-                        ElevatedButton(
-                            onPressed: () => {saveInvertedImage()},
-                            child: Text('Save Image'))
-                      ],
-                    )
-                  ],
+        body: SingleChildScrollView(
+          child: Center(
+              child: Column(children: [
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () {
+                    openFileManager();
+                  },
+                  child: Text('Select Image to Invert'),
                 ),
-              )),
-        ])));
+                Visibility(
+                    visible: _imageExceptionOccurred,
+                    child: Text(
+                      "Invalid Image Data, Please Re-Select",
+                      style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16),
+                    )),
+                Visibility(
+                    visible:
+                        (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
+                    child: Row(
+                      children: [
+                        Text("Inversion Shape: \tRect"),
+                        Radio(
+                            value: 0,
+                            groupValue: _inversionShape,
+                            onChanged: (value) {
+                              setState(() {
+                                _inversionShape = value!;
+                                _inversionLabel = "Inversion Width";
+                                _shape = InversionShape.rect;
+                              });
+                            }),
+                        Text("Box"),
+                        Radio(
+                            value: 1,
+                            groupValue: _inversionShape,
+                            onChanged: (value) {
+                              setState(() {
+                                _inversionShape = value!;
+                                _inversionLabel = "Inversion Width";
+                                _shape = InversionShape.box;
+                              });
+                            }),
+                        Text("Circle"),
+                        Radio(
+                            value: 2,
+                            groupValue: _inversionShape,
+                            onChanged: (value) {
+                              setState(() {
+                                _inversionShape = value!;
+                                _inversionLabel = "Inversion Radius";
+                                _shape = InversionShape.circle;
+                              });
+                            }),
+                        Text("Accumulate"),
+                        Checkbox(
+                            value: _accumulate,
+                            onChanged: (bool? value) => {
+                                  setState(() {
+                                    _accumulate = value!;
+                                  })
+                                }),
+                        Text("Inversion Center: $_xInImage $_yInImage"),
+                        ElevatedButton(
+                            onPressed: () => {resetInversionCenter()},
+                            child: Text("Reset Inversion Center")),
+                        Column(
+                          children: [
+                            Slider(
+                                value: _pixelSliderCurr[0],
+                                max: 255,
+                                min: 0,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _pixelSliderCurr[0] = val;
+                                    _pixelSliderCurrInt[0] = val.ceil();
+                                  });
+                                }),
+                            Text(
+                                "Pixel Red Subtract Value: $_pixelSliderCurrInt[0]"),
+                            Slider(
+                                value: _pixelSliderCurr[1],
+                                max: 255,
+                                min: 0,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _pixelSliderCurr[1] = val;
+                                    _pixelSliderCurrInt[1] = val.ceil();
+                                  });
+                                }),
+                            Text(
+                                "Pixel Green Subtract Value: $_pixelSliderCurrInt[1]"),
+                            Slider(
+                                value: _pixelSliderCurr[2],
+                                max: 255,
+                                min: 0,
+                                onChanged: (val) {
+                                  setState(() {
+                                    _pixelSliderCurr[2] = val;
+                                    _pixelSliderCurrInt[2] = val.ceil();
+                                  });
+                                }),
+                            Text(
+                                "Pixel Blue Subtract Value: $_pixelSliderCurrInt[2]"),
+                          ],
+                        )
+                      ],
+                    ))
+              ],
+            ),
+            Visibility(
+              visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
+              child: Column(
+                children: [
+                  Listener(
+                      key: _keyImage,
+                      onPointerDown: _updateLocation,
+                      child: Stack(
+                        children: [
+                          imgGetter(),
+                          Positioned(
+                              top: _yInImage -
+                                  15, //for mouse pointer (TODO: add conditional for mobile devices)
+                              left: _xInImage - 15,
+                              child: SvgPicture.asset(
+                                  'assets/svgs/circle-dashed-svgrepo-com.svg'))
+                        ],
+                      )),
+                  Slider(
+                      value: _sliderCurr,
+                      max: _sliderMax,
+                      onChanged: (val) {
+                        setState(() {
+                          _sliderCurr = val;
+                        });
+                      }),
+                  Text('$_inversionLabel: ${_sliderCurr.floor()}'),
+                  Row(
+                    children: [
+                      ElevatedButton(
+                          onPressed: () => {clearInversion()},
+                          child: Text('Clear Inversion')),
+                      ElevatedButton(
+                          onPressed: () => {invertSelectedImage()},
+                          child: Text('Invert Image')),
+                      ElevatedButton(
+                          onPressed: () => {saveInvertedImage()},
+                          child: Text('Save Image'))
+                    ],
+                  )
+                ],
+              ),
+            ),
+          ])),
+        ));
   }
 
   void openFileManager() async {
@@ -394,13 +396,14 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget imgGetter() {
-    if (_imgMemory.isNotEmpty)
+    if (_imgMemory.isNotEmpty) {
       return CustomPaint(
-          child: Image.memory(_imgMemory),
           foregroundPainter: ImgPainter(
-              imgCoords[0], imgCoords[1], _sliderCurr, _rectHeight, _shape));
-    else
+              imgCoords[0], imgCoords[1], _sliderCurr, _rectHeight, _shape),
+          child: Image.memory(_imgMemory));
+    } else {
       return Container();
+    }
   }
 
   void setInversionShape(int selection) {
