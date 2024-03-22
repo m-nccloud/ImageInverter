@@ -26,7 +26,6 @@ class InversionHelper {
       case InversionShape.rect:
         {
           if (centerX == halfWidth.floor() && centerY == halfHeight.floor()) {
-            print("HEED");
             final range = inputImage.getRange(
                 centerX - halfMag.floor(),
                 centerY - halfScaledH.floor(),
