@@ -89,10 +89,12 @@ class _MyHomePageState extends State<MyHomePage> {
   var _pixelSliderCurrInt = [255, 255, 255];
   late ui.Codec codec;
   late img.Image decodedImg;
-  late int size;
+  late int sliderSize;
   late double rectRatio;
   final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
+  late double _screenWidth;
+  late double _screenHeight;
 
   void _updateLocation(PointerEvent details) {
     setState(() {
@@ -113,6 +115,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    _screenWidth = MediaQuery.of(context).size.width;
+    _screenHeight = MediaQuery.of(context).size.height;
+
     return Scaffold(
         appBar: AppBar(
           title: Text('Image Inverter'),
@@ -183,7 +188,6 @@ class _MyHomePageState extends State<MyHomePage> {
                                     _accumulate = value!;
                                   })
                                 }),
-                        Text("Inversion Center: $_xInImage $_yInImage"),
                         ElevatedButton(
                             onPressed: () => {resetInversionCenter()},
                             child: Text("Reset Inversion Center")),
@@ -298,9 +302,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ui.Image uiImg = await convertImageToFlutterUi(decodedImg);
         final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
         setState(() {
-          size = decodedImg.width;
+          sliderSize = decodedImg.width;
           _sliderCurr = 0;
-          _sliderMax = size.toDouble();
+          _sliderMax = sliderSize.toDouble();
           _imgMemory = Uint8List.view(pngBytes!.buffer);
           _xInImage = decodedImg.width / 2;
           _yInImage = decodedImg.height / 2;
@@ -310,6 +314,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void invertSelectedImage() async {
+    getCoords();
     var inputImage = _accumulate
         ? decodedImg
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
@@ -349,6 +354,19 @@ class _MyHomePageState extends State<MyHomePage> {
       _xInImage = decodedImg.width / 2;
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
+    });
+  }
+
+  void getCoords() {
+    setState(() {
+      if (decodedImg.width > _screenWidth) {
+        print("xiinimage $_xInImage");
+        _xInImage *= (decodedImg.width / _screenWidth);
+        _yInImage *= (decodedImg.width / _screenWidth);
+        print("xiinimage $_xInImage");
+        imgCoords[0] = _xInImage.floor();
+        imgCoords[1] = _yInImage.floor();
+      }
     });
   }
 
@@ -397,10 +415,12 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget imgGetter() {
     if (_imgMemory.isNotEmpty) {
-      return CustomPaint(
-          foregroundPainter: ImgPainter(
-              imgCoords[0], imgCoords[1], _sliderCurr, _rectHeight, _shape),
-          child: Image.memory(_imgMemory));
+      return Column(children: [
+        CustomPaint(
+            foregroundPainter: ImgPainter(
+                imgCoords[0], imgCoords[1], _sliderCurr, _rectHeight, _shape),
+            child: Image.memory(_imgMemory)),
+      ]);
     } else {
       return Container();
     }
