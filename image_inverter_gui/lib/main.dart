@@ -94,7 +94,6 @@ class _MyHomePageState extends State<MyHomePage> {
   final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
   late double _screenWidth;
-  late double _screenHeight;
 
   void _updateLocation(PointerEvent details) {
     setState(() {
@@ -116,7 +115,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     _screenWidth = MediaQuery.of(context).size.width;
-    _screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
         appBar: AppBar(
@@ -352,6 +350,10 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _yInImage = decodedImg.height / 2;
       _xInImage = decodedImg.width / 2;
+      if (decodedImg.height > _screenWidth) {
+        _xInImage /= (decodedImg.width / _screenWidth);
+        _yInImage /= (decodedImg.width / _screenWidth);
+      }
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
     });
@@ -360,10 +362,8 @@ class _MyHomePageState extends State<MyHomePage> {
   void getCoords() {
     setState(() {
       if (decodedImg.width > _screenWidth) {
-        print("xiinimage $_xInImage");
         _xInImage *= (decodedImg.width / _screenWidth);
         _yInImage *= (decodedImg.width / _screenWidth);
-        print("xiinimage $_xInImage");
         imgCoords[0] = _xInImage.floor();
         imgCoords[1] = _yInImage.floor();
       }
