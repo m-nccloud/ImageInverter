@@ -4,17 +4,16 @@ import 'enums.dart';
 
 class InversionHelper {
   late img.Image inputImage;
-  late double heightWidthRatio;
+  // late double heightWidthRatio;
 
   double calculateImgHeight(int magnitude) {
     return -1;
   }
 
-  double invertImage(img.Image inputImage, int magnitude, List<int> coords,
+  void invertImage(img.Image inputImage, int magnitude, List<int> coords,
       List<int> pixelSubtractValue, InversionShape shape) {
     this.inputImage = inputImage;
     var dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
-    heightWidthRatio = dumbRatio;
     var halfMag = magnitude / 2;
     var halfScaledH = dumbRatio * halfMag;
     var halfWidth = inputImage.width / 2;
@@ -80,8 +79,6 @@ class InversionHelper {
           }
         }
     }
-
-    return halfScaledH * 2;
   }
 }
 
@@ -99,7 +96,6 @@ double invertImage(img.Image inputImage, int magnitude, List<int> coords,
     case InversionShape.rect:
       {
         if (centerX == halfWidth.floor() && centerY == halfHeight.floor()) {
-          print("HEED");
           final range = inputImage.getRange(
               centerX - halfMag.floor(),
               centerY - halfScaledH.floor(),

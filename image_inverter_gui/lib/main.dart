@@ -30,12 +30,19 @@ class ImgPainter extends CustomPainter {
     if (shape == InversionShape.circle) {
       canvas.drawCircle(Offset(centerX.toDouble(), centerY.toDouble()),
           magnitude / 2, myPaint);
-    } else {
+    } else if (shape == InversionShape.rect) {
       canvas.drawRect(
           Rect.fromCenter(
               center: Offset(centerX.toDouble(), centerY.toDouble()),
               width: magnitude,
               height: rectHeight),
+          myPaint);
+    } else {
+      canvas.drawRect(
+          Rect.fromCenter(
+              center: Offset(centerX.toDouble(), centerY.toDouble()),
+              width: magnitude,
+              height: magnitude),
           myPaint);
     }
   }
@@ -72,7 +79,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _imgFilePath = '';
   Uint8List _imgMemory = Uint8List(0);
   bool _imageExceptionOccurred = false;
-  bool _accumulate = false;
+  bool _accumulate = true;
   int _inversionShape = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
@@ -257,6 +264,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       onChanged: (val) {
                         setState(() {
                           _sliderCurr = val;
+                          _rectHeight = _sliderCurr.floor() *
+                              (decodedImg.height / decodedImg.width);
                         });
                       }),
                   Text('$_inversionLabel: ${_sliderCurr.floor()}'),
@@ -317,13 +326,12 @@ class _MyHomePageState extends State<MyHomePage> {
         ? decodedImg
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
 
-    var rHeight = invertImage(inputImage, _sliderCurr.floor(), imgCoords,
-        _pixelSliderCurrInt, _shape);
+    invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
+        _shape);
     ui.Image uiImg = await convertImageToFlutterUi(inputImage);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
-      _rectHeight = rHeight;
     });
   }
 
