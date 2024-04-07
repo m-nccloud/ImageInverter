@@ -18,31 +18,33 @@ class ImgPainter extends CustomPainter {
   var magnitude = 0.0;
   var rectHeight = 0.0;
   var shape = InversionShape.rect;
+  var scaleFactor = 1.0;
 
-  ImgPainter(
-      this.centerX, this.centerY, this.magnitude, this.rectHeight, this.shape);
+  ImgPainter(this.centerX, this.centerY, this.magnitude, this.rectHeight,
+      this.shape, this.scaleFactor);
 
   @override
   void paint(Canvas canvas, Size size) {
+    final tempMagnitude = magnitude * scaleFactor;
     final myPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
     if (shape == InversionShape.circle) {
       canvas.drawCircle(Offset(centerX.toDouble(), centerY.toDouble()),
-          magnitude / 2, myPaint);
+          tempMagnitude / 2, myPaint);
     } else if (shape == InversionShape.rect) {
       canvas.drawRect(
           Rect.fromCenter(
               center: Offset(centerX.toDouble(), centerY.toDouble()),
-              width: magnitude,
+              width: tempMagnitude,
               height: rectHeight),
           myPaint);
     } else {
       canvas.drawRect(
           Rect.fromCenter(
               center: Offset(centerX.toDouble(), centerY.toDouble()),
-              width: magnitude,
-              height: magnitude),
+              width: tempMagnitude,
+              height: tempMagnitude),
           myPaint);
     }
   }
@@ -265,7 +267,10 @@ class _MyHomePageState extends State<MyHomePage> {
                         setState(() {
                           _sliderCurr = val;
                           _rectHeight = _sliderCurr.floor() *
-                              (decodedImg.height / decodedImg.width);
+                              (decodedImg.height / decodedImg.width) *
+                              (decodedImg.width > _screenWidth
+                                  ? _screenWidth / decodedImg.width
+                                  : 1);
                         });
                       }),
                   Text('$_inversionLabel: ${_sliderCurr.floor()}'),
@@ -358,7 +363,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _yInImage = decodedImg.height / 2;
       _xInImage = decodedImg.width / 2;
-      if (decodedImg.height > _screenWidth) {
+      if (decodedImg.width > _screenWidth) {
         _xInImage /= (decodedImg.width / _screenWidth);
         _yInImage /= (decodedImg.width / _screenWidth);
       }
@@ -370,10 +375,10 @@ class _MyHomePageState extends State<MyHomePage> {
   void getCoords() {
     setState(() {
       if (decodedImg.width > _screenWidth) {
-        _xInImage *= (decodedImg.width / _screenWidth);
-        _yInImage *= (decodedImg.width / _screenWidth);
-        imgCoords[0] = _xInImage.floor();
-        imgCoords[1] = _yInImage.floor();
+        var scaledXCoord = _xInImage * (decodedImg.width / _screenWidth);
+        var scaledYCoord = _yInImage * (decodedImg.width / _screenWidth);
+        imgCoords[0] = scaledXCoord.floor();
+        imgCoords[1] = scaledYCoord.floor();
       }
     });
   }
@@ -426,7 +431,14 @@ class _MyHomePageState extends State<MyHomePage> {
       return Column(children: [
         CustomPaint(
             foregroundPainter: ImgPainter(
-                imgCoords[0], imgCoords[1], _sliderCurr, _rectHeight, _shape),
+                _xInImage.floor(),
+                _yInImage.floor(),
+                _sliderCurr,
+                _rectHeight,
+                _shape,
+                (decodedImg.width > _screenWidth
+                    ? _screenWidth / decodedImg.width
+                    : 1)),
             child: Image.memory(_imgMemory)),
       ]);
     } else {
