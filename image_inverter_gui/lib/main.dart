@@ -154,7 +154,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
                     child: Row(
                       children: [
-                        Text("Inversion Shape: \tRect"),
+                        Text("\tInversion Shape: \tRect"),
                         Radio(
                             value: 0,
                             groupValue: _inversionShape,
@@ -198,44 +198,52 @@ class _MyHomePageState extends State<MyHomePage> {
                         ElevatedButton(
                             onPressed: () => {resetInversionCenter()},
                             child: Text("Reset Inversion Center")),
-                        Column(
+                        Row(
                           children: [
-                            Slider(
-                                value: _pixelSliderCurr[0],
-                                max: 255,
-                                min: 0,
-                                onChanged: (val) {
-                                  setState(() {
-                                    _pixelSliderCurr[0] = val;
-                                    _pixelSliderCurrInt[0] = val.ceil();
-                                  });
-                                }),
-                            Text(
-                                "Pixel Red Subtract Value: $_pixelSliderCurrInt[0]"),
-                            Slider(
-                                value: _pixelSliderCurr[1],
-                                max: 255,
-                                min: 0,
-                                onChanged: (val) {
-                                  setState(() {
-                                    _pixelSliderCurr[1] = val;
-                                    _pixelSliderCurrInt[1] = val.ceil();
-                                  });
-                                }),
-                            Text(
-                                "Pixel Green Subtract Value: $_pixelSliderCurrInt[1]"),
-                            Slider(
-                                value: _pixelSliderCurr[2],
-                                max: 255,
-                                min: 0,
-                                onChanged: (val) {
-                                  setState(() {
-                                    _pixelSliderCurr[2] = val;
-                                    _pixelSliderCurrInt[2] = val.ceil();
-                                  });
-                                }),
-                            Text(
-                                "Pixel Blue Subtract Value: $_pixelSliderCurrInt[2]"),
+                            Column(
+                              children: [
+                                Text(
+                                    "Red Subtract Value: ${_pixelSliderCurrInt[0]}"),
+                                Slider(
+                                    value: _pixelSliderCurr[0],
+                                    max: 255,
+                                    min: 0,
+                                    onChanged: (val) {
+                                      setState(() {
+                                        _pixelSliderCurr[0] = val;
+                                        _pixelSliderCurrInt[0] = val.ceil();
+                                      });
+                                    }),
+                              ],
+                            ),
+                            Column(children: [
+                              Text(
+                                  "Green Subtract Value: ${_pixelSliderCurrInt[1]}"),
+                              Slider(
+                                  value: _pixelSliderCurr[1],
+                                  max: 255,
+                                  min: 0,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _pixelSliderCurr[1] = val;
+                                      _pixelSliderCurrInt[1] = val.ceil();
+                                    });
+                                  })
+                            ]),
+                            Column(children: [
+                              Text(
+                                  "Blue Subtract Value: ${_pixelSliderCurrInt[2]}"),
+                              Slider(
+                                  value: _pixelSliderCurr[2],
+                                  max: 255,
+                                  min: 0,
+                                  onChanged: (val) {
+                                    setState(() {
+                                      _pixelSliderCurr[2] = val;
+                                      _pixelSliderCurrInt[2] = val.ceil();
+                                    });
+                                  })
+                            ]),
                           ],
                         )
                       ],
