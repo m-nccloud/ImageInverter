@@ -132,124 +132,79 @@ class _MyHomePageState extends State<MyHomePage> {
         body: SingleChildScrollView(
           child: Center(
               child: Column(children: [
-            Row(
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    openFileManager();
-                  },
-                  child: Text('Select Image to Invert'),
-                ),
-                Visibility(
-                    visible: _imageExceptionOccurred,
-                    child: Text(
-                      "Invalid Image Data, Please Re-Select",
-                      style: TextStyle(
-                          color: Colors.red,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16),
-                    )),
-                Visibility(
-                    visible:
-                        (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
-                    child: Row(
-                      children: [
-                        Text("\tInversion Shape: \tRect"),
-                        Radio(
-                            value: 0,
-                            groupValue: _inversionShape,
-                            onChanged: (value) {
+            Row(children: [
+              ElevatedButton(
+                onPressed: () {
+                  openFileManager();
+                },
+                child: Text('Select Image to Invert'),
+              ),
+              Visibility(
+                  visible: _imageExceptionOccurred,
+                  child: Text(
+                    "Invalid Image Data, Please Re-Select",
+                    style: TextStyle(
+                        color: Colors.red,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16),
+                  )),
+              Visibility(
+                  visible:
+                      (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
+                  child: Row(children: [
+                    Text("\tInversion Shape: \tRect"),
+                    Radio(
+                        value: 0,
+                        groupValue: _inversionShape,
+                        onChanged: (value) {
+                          setState(() {
+                            _inversionShape = value!;
+                            _inversionLabel = "Inversion Width";
+                            _shape = InversionShape.rect;
+                          });
+                        }),
+                    Text("Box"),
+                    Radio(
+                        value: 1,
+                        groupValue: _inversionShape,
+                        onChanged: (value) {
+                          setState(() {
+                            _inversionShape = value!;
+                            _inversionLabel = "Inversion Width";
+                            _shape = InversionShape.box;
+                          });
+                        }),
+                    Text("Circle"),
+                    Radio(
+                        value: 2,
+                        groupValue: _inversionShape,
+                        onChanged: (value) {
+                          setState(() {
+                            _inversionShape = value!;
+                            _inversionLabel = "Inversion Radius";
+                            _shape = InversionShape.circle;
+                          });
+                        }),
+                    Text("Accumulate"),
+                    Checkbox(
+                        value: _accumulate,
+                        onChanged: (bool? value) => {
                               setState(() {
-                                _inversionShape = value!;
-                                _inversionLabel = "Inversion Width";
-                                _shape = InversionShape.rect;
-                              });
+                                _accumulate = value!;
+                              })
                             }),
-                        Text("Box"),
-                        Radio(
-                            value: 1,
-                            groupValue: _inversionShape,
-                            onChanged: (value) {
-                              setState(() {
-                                _inversionShape = value!;
-                                _inversionLabel = "Inversion Width";
-                                _shape = InversionShape.box;
-                              });
-                            }),
-                        Text("Circle"),
-                        Radio(
-                            value: 2,
-                            groupValue: _inversionShape,
-                            onChanged: (value) {
-                              setState(() {
-                                _inversionShape = value!;
-                                _inversionLabel = "Inversion Radius";
-                                _shape = InversionShape.circle;
-                              });
-                            }),
-                        Text("Accumulate"),
-                        Checkbox(
-                            value: _accumulate,
-                            onChanged: (bool? value) => {
-                                  setState(() {
-                                    _accumulate = value!;
-                                  })
-                                }),
-                        ElevatedButton(
-                            onPressed: () => {resetInversionCenter()},
-                            child: Text("Reset Inversion Center")),
-                        Row(
-                          children: [
-                            Column(
-                              children: [
-                                Text(
-                                    "Red Subtract Value: ${_pixelSliderCurrInt[0]}"),
-                                Slider(
-                                    value: _pixelSliderCurr[0],
-                                    max: 255,
-                                    min: 0,
-                                    onChanged: (val) {
-                                      setState(() {
-                                        _pixelSliderCurr[0] = val;
-                                        _pixelSliderCurrInt[0] = val.ceil();
-                                      });
-                                    }),
-                              ],
-                            ),
-                            Column(children: [
-                              Text(
-                                  "Green Subtract Value: ${_pixelSliderCurrInt[1]}"),
-                              Slider(
-                                  value: _pixelSliderCurr[1],
-                                  max: 255,
-                                  min: 0,
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _pixelSliderCurr[1] = val;
-                                      _pixelSliderCurrInt[1] = val.ceil();
-                                    });
-                                  })
-                            ]),
-                            Column(children: [
-                              Text(
-                                  "Blue Subtract Value: ${_pixelSliderCurrInt[2]}"),
-                              Slider(
-                                  value: _pixelSliderCurr[2],
-                                  max: 255,
-                                  min: 0,
-                                  onChanged: (val) {
-                                    setState(() {
-                                      _pixelSliderCurr[2] = val;
-                                      _pixelSliderCurrInt[2] = val.ceil();
-                                    });
-                                  })
-                            ]),
-                          ],
-                        )
-                      ],
-                    ))
-              ],
-            ),
+                    ElevatedButton(
+                        onPressed: () => {resetInversionCenter()},
+                        child: Text("Reset Inversion Center")),
+                    LayoutBuilder(builder: (context, constraints) {
+                      double screenWidth = MediaQuery.of(context).size.width;
+                      double threshold = 0.6 * screenWidth;
+                      return screenWidth < threshold
+                          ? Column(children: pixelSubtractSliders())
+                          : Row(children: pixelSubtractSliders());
+                    })
+                  ]))
+            ]),
             Visibility(
               visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
               child: Column(
@@ -313,7 +268,8 @@ class _MyHomePageState extends State<MyHomePage> {
         try {
           decodedImg =
               await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
-        } on img.ImageException {
+        } on img.ImageException catch (ex) {
+          print(ex);
           setState(() {
             _imageExceptionOccurred = true;
           });
@@ -349,8 +305,10 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void saveInvertedImage() async {
-    var savePath = await FilePicker.platform.saveFile();
+    var savePath = await FilePicker.platform
+        .saveFile(type: FileType.custom, allowedExtensions: ['png']);
     if (savePath != null) {
+      savePath = "$savePath.png";
       var saveImgFile = await File(savePath).create(recursive: true);
       await saveImgFile.writeAsBytes(_imgMemory);
     }
@@ -456,5 +414,51 @@ class _MyHomePageState extends State<MyHomePage> {
 
   void setInversionShape(int selection) {
     _inversionShape = selection;
+  }
+
+  List<Widget> pixelSubtractSliders() {
+    return [
+      Column(
+        children: [
+          Text("Red Subtract Value: ${_pixelSliderCurrInt[0]}"),
+          Slider(
+              value: _pixelSliderCurr[0],
+              max: 255,
+              min: 0,
+              onChanged: (val) {
+                setState(() {
+                  _pixelSliderCurr[0] = val;
+                  _pixelSliderCurrInt[0] = val.ceil();
+                });
+              }),
+        ],
+      ),
+      Column(children: [
+        Text("Green Subtract Value: ${_pixelSliderCurrInt[1]}"),
+        Slider(
+            value: _pixelSliderCurr[1],
+            max: 255,
+            min: 0,
+            onChanged: (val) {
+              setState(() {
+                _pixelSliderCurr[1] = val;
+                _pixelSliderCurrInt[1] = val.ceil();
+              });
+            })
+      ]),
+      Column(children: [
+        Text("Blue Subtract Value: ${_pixelSliderCurrInt[2]}"),
+        Slider(
+            value: _pixelSliderCurr[2],
+            max: 255,
+            min: 0,
+            onChanged: (val) {
+              setState(() {
+                _pixelSliderCurr[2] = val;
+                _pixelSliderCurrInt[2] = val.ceil();
+              });
+            })
+      ])
+    ];
   }
 }
