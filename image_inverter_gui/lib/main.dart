@@ -284,6 +284,10 @@ class _MyHomePageState extends State<MyHomePage> {
           _imgMemory = Uint8List.view(pngBytes!.buffer);
           _xInImage = decodedImg.width / 2;
           _yInImage = decodedImg.height / 2;
+          if (decodedImg.width > _screenWidth) {
+            _xInImage /= (decodedImg.width / _screenWidth);
+            _yInImage /= (decodedImg.width / _screenWidth);
+          }
         });
       }
     }
