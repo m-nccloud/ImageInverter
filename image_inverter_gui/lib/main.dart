@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'dart:io';
 import 'package:image/image.dart' as img;
 import 'package:image_inverter_gui_flutter/inversion_functions.dart';
+import 'package:win32/win32.dart';
 import 'enums.dart';
 
 void main() {
@@ -102,7 +103,9 @@ class _MyHomePageState extends State<MyHomePage> {
   late double rectRatio;
   final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
-  late double _screenWidth;
+  int _screenWidth = 0;
+  int _displayWidth = 0;
+  int _screenThreshold = 0;
 
   void _updateLocation(PointerEvent details) {
     setState(() {
@@ -122,8 +125,18 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+    _displayWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    _screenThreshold = (_displayWidth * 0.7).floor();
+    print(_displayWidth);
+    print(_screenThreshold);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    _screenWidth = MediaQuery.of(context).size.width;
+    _screenWidth = MediaQuery.of(context).size.width.floor();
 
     return Scaffold(
         appBar: AppBar(
@@ -196,19 +209,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     ElevatedButton(
                         onPressed: () => {resetInversionCenter()},
                         child: Text("Reset Inversion Center")),
-                    LayoutBuilder(builder: (context, constraints) {
-                      double screenWidth = MediaQuery.of(context).size.width;
-                      double threshold = 0.6 * screenWidth;
-                      return screenWidth < threshold
-                          ? Column(children: pixelSubtractSliders())
-                          : Row(children: pixelSubtractSliders());
-                    })
+                    Visibility(
+                        visible: _screenWidth >= _screenThreshold,
+                        child: Row(children: pixelSubtractSliders()))
                   ]))
             ]),
             Visibility(
               visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
               child: Column(
                 children: [
+                  Visibility(
+                      visible: _screenWidth < _screenThreshold,
+                      child: Row(children: pixelSubtractSliders())),
                   Listener(
                       key: _keyImage,
                       onPointerDown: _updateLocation,
@@ -424,7 +436,9 @@ class _MyHomePageState extends State<MyHomePage> {
     return [
       Column(
         children: [
-          Text("Red Subtract Value: ${_pixelSliderCurrInt[0]}"),
+          Transform.translate(
+              offset: Offset(0.0, 12.5),
+              child: Text("Red Subtract Value: ${_pixelSliderCurrInt[0]}")),
           Slider(
               value: _pixelSliderCurr[0],
               max: 255,
@@ -438,7 +452,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ],
       ),
       Column(children: [
-        Text("Green Subtract Value: ${_pixelSliderCurrInt[1]}"),
+        Transform.translate(
+            offset: Offset(0.0, 12.5),
+            child: Text("Green Subtract Value: ${_pixelSliderCurrInt[1]}")),
         Slider(
             value: _pixelSliderCurr[1],
             max: 255,
@@ -451,7 +467,9 @@ class _MyHomePageState extends State<MyHomePage> {
             })
       ]),
       Column(children: [
-        Text("Blue Subtract Value: ${_pixelSliderCurrInt[2]}"),
+        Transform.translate(
+            offset: Offset(0.0, 12.5),
+            child: Text("Blue Subtract Value: ${_pixelSliderCurrInt[2]}")),
         Slider(
             value: _pixelSliderCurr[2],
             max: 255,
