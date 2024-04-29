@@ -98,12 +98,14 @@ class _MyHomePageState extends State<MyHomePage> {
   var _pixelSliderCurr = [255.0, 255.0, 255.0];
   var _pixelSliderCurrInt = [255, 255, 255];
   late ui.Codec codec;
-  late img.Image decodedImg;
+  img.Image decodedImg = img.Image.empty();
   late int sliderSize;
   late double rectRatio;
   final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
   int _screenWidth = 0;
+  int _prevScreenWidth = -1;
+  int _prevScreenHeight = -1;
   int _displayWidth = 0;
   int _screenThreshold = 0;
 
@@ -130,13 +132,27 @@ class _MyHomePageState extends State<MyHomePage> {
     SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     _displayWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
     _screenThreshold = (_displayWidth * 0.7).floor();
-    print(_displayWidth);
-    print(_screenThreshold);
   }
 
   @override
   Widget build(BuildContext context) {
-    _screenWidth = MediaQuery.of(context).size.width.floor();
+    _screenWidth = MediaQuery.of(context).size.width.round();
+    var screenHeight = MediaQuery.of(context).size.height.round();
+    if (_prevScreenWidth == -1) _prevScreenWidth = _screenWidth;
+    if (_prevScreenHeight == -1) _prevScreenHeight = screenHeight;
+
+    if (decodedImg.width > _displayWidth &&
+        (_prevScreenWidth != _screenWidth ||
+            _prevScreenHeight != screenHeight)) {
+      setState(() {
+        _xInImage *= (_screenWidth / _prevScreenWidth);
+        _yInImage *= (_screenWidth / _prevScreenWidth);
+        imgCoords[0] = _xInImage.round();
+        imgCoords[1] = _yInImage.round();
+      });
+    }
+    _prevScreenWidth = _screenWidth;
+    _prevScreenHeight = screenHeight;
 
     return Scaffold(
         appBar: AppBar(
@@ -294,12 +310,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _sliderCurr = 0;
           _sliderMax = sliderSize.toDouble();
           _imgMemory = Uint8List.view(pngBytes!.buffer);
-          _xInImage = decodedImg.width / 2;
-          _yInImage = decodedImg.height / 2;
-          if (decodedImg.width > _screenWidth) {
-            _xInImage /= (decodedImg.width / _screenWidth);
-            _yInImage /= (decodedImg.width / _screenWidth);
-          }
+          resetInversionCenter();
         });
       }
     }
