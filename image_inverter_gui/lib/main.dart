@@ -130,7 +130,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    _displayWidth = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+    _displayWidth = GetSystemMetrics(SM_CXSCREEN);
     _screenThreshold = (_displayWidth * 0.7).floor();
   }
 
