@@ -52,7 +52,9 @@ class ImgPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant ImgPainter oldDelegate) {
-    return oldDelegate.centerX != centerX || oldDelegate.centerY != centerY;
+    return oldDelegate.centerX != centerX ||
+        oldDelegate.centerY != centerY ||
+        oldDelegate.rectHeight != rectHeight;
   }
 }
 
@@ -158,131 +160,8 @@ class _MyHomePageState extends State<MyHomePage> {
         appBar: AppBar(
           title: Text('Image Inverter'),
         ),
-        body: SingleChildScrollView(
-          child: Center(
-              child: Column(children: [
-            Row(children: [
-              ElevatedButton(
-                onPressed: () {
-                  openFileManager();
-                },
-                child: Text('Select Image to Invert'),
-              ),
-              Visibility(
-                  visible: _imageExceptionOccurred,
-                  child: Text(
-                    "Invalid Image Data, Please Re-Select",
-                    style: TextStyle(
-                        color: Colors.red,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16),
-                  )),
-              Visibility(
-                  visible:
-                      (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
-                  child: Row(children: [
-                    Text("\tInversion Shape: \tRect"),
-                    Radio(
-                        value: 0,
-                        groupValue: _inversionShape,
-                        onChanged: (value) {
-                          setState(() {
-                            _inversionShape = value!;
-                            _inversionLabel = "Inversion Width";
-                            _shape = InversionShape.rect;
-                          });
-                        }),
-                    Text("Box"),
-                    Radio(
-                        value: 1,
-                        groupValue: _inversionShape,
-                        onChanged: (value) {
-                          setState(() {
-                            _inversionShape = value!;
-                            _inversionLabel = "Inversion Width";
-                            _shape = InversionShape.box;
-                          });
-                        }),
-                    Text("Circle"),
-                    Radio(
-                        value: 2,
-                        groupValue: _inversionShape,
-                        onChanged: (value) {
-                          setState(() {
-                            _inversionShape = value!;
-                            _inversionLabel = "Inversion Radius";
-                            _shape = InversionShape.circle;
-                          });
-                        }),
-                    Text("Accumulate"),
-                    Checkbox(
-                        value: _accumulate,
-                        onChanged: (bool? value) => {
-                              setState(() {
-                                _accumulate = value!;
-                              })
-                            }),
-                    ElevatedButton(
-                        onPressed: () => {resetInversionCenter()},
-                        child: Text("Reset Inversion Center")),
-                    Visibility(
-                        visible: _screenWidth >= _screenThreshold,
-                        child: Row(children: pixelSubtractSliders()))
-                  ]))
-            ]),
-            Visibility(
-              visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
-              child: Column(
-                children: [
-                  Visibility(
-                      visible: _screenWidth < _screenThreshold,
-                      child: Row(children: pixelSubtractSliders())),
-                  Listener(
-                      key: _keyImage,
-                      onPointerDown: _updateLocation,
-                      child: Stack(
-                        children: [
-                          imgGetter(),
-                          Positioned(
-                              top: _yInImage -
-                                  15, //for mouse pointer (TODO: add conditional for mobile devices)
-                              left: _xInImage - 15,
-                              child: SvgPicture.asset(
-                                  'assets/svgs/circle-dashed-svgrepo-com.svg'))
-                        ],
-                      )),
-                  Slider(
-                      value: _sliderCurr,
-                      max: _sliderMax,
-                      onChanged: (val) {
-                        setState(() {
-                          _sliderCurr = val;
-                          _rectHeight = _sliderCurr.floor() *
-                              (decodedImg.height / decodedImg.width) *
-                              (decodedImg.width > _screenWidth
-                                  ? _screenWidth / decodedImg.width
-                                  : 1);
-                        });
-                      }),
-                  Text('$_inversionLabel: ${_sliderCurr.floor()}'),
-                  Row(
-                    children: [
-                      ElevatedButton(
-                          onPressed: () => {clearInversion()},
-                          child: Text('Clear Inversion')),
-                      ElevatedButton(
-                          onPressed: () => {invertSelectedImage()},
-                          child: Text('Invert Image')),
-                      ElevatedButton(
-                          onPressed: () => {saveInvertedImage()},
-                          child: Text('Save Image'))
-                    ],
-                  )
-                ],
-              ),
-            ),
-          ])),
-        ));
+        body: Center(
+            child: Column(children: topBarButtons() + middleAndBottomBar())));
   }
 
   void openFileManager() async {
@@ -421,7 +300,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Widget imgGetter() {
     if (_imgMemory.isNotEmpty) {
-      return Column(children: [
+      return Stack(children: [
         CustomPaint(
             foregroundPainter: ImgPainter(
                 _xInImage.floor(),
@@ -493,5 +372,131 @@ class _MyHomePageState extends State<MyHomePage> {
             })
       ])
     ];
+  }
+
+  List<Widget> topBarButtons() {
+    return [
+      Row(
+        children: [
+          ElevatedButton(
+            onPressed: () {
+              openFileManager();
+            },
+            child: Text('Select Image to Invert'),
+          ),
+          Visibility(
+              visible: _imageExceptionOccurred,
+              child: Text(
+                "Invalid Image Data, Please Re-Select",
+                style: TextStyle(
+                    color: Colors.red,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16),
+              )),
+          Visibility(
+              visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
+              child: Row(children: [
+                Text("\tInversion Shape: \tRect"),
+                Radio(
+                    value: 0,
+                    groupValue: _inversionShape,
+                    onChanged: (value) {
+                      setState(() {
+                        _inversionShape = value!;
+                        _inversionLabel = "Inversion Width";
+                        _shape = InversionShape.rect;
+                      });
+                    }),
+                Text("Box"),
+                Radio(
+                    value: 1,
+                    groupValue: _inversionShape,
+                    onChanged: (value) {
+                      setState(() {
+                        _inversionShape = value!;
+                        _inversionLabel = "Inversion Width";
+                        _shape = InversionShape.box;
+                      });
+                    }),
+                Text("Circle"),
+                Radio(
+                    value: 2,
+                    groupValue: _inversionShape,
+                    onChanged: (value) {
+                      setState(() {
+                        _inversionShape = value!;
+                        _inversionLabel = "Inversion Radius";
+                        _shape = InversionShape.circle;
+                      });
+                    }),
+                Text("Accumulate"),
+                Checkbox(
+                    value: _accumulate,
+                    onChanged: (bool? value) => {
+                          setState(() {
+                            _accumulate = value!;
+                          })
+                        }),
+                ElevatedButton(
+                    onPressed: () => {resetInversionCenter()},
+                    child: Text("Reset Inversion Center")),
+                Visibility(
+                    visible: _screenWidth >= _screenThreshold,
+                    child: Row(children: pixelSubtractSliders()))
+              ])),
+        ],
+      )
+    ];
+  }
+
+  List<Widget> middleAndBottomBar() {
+    return [
+      Expanded(
+        child: SingleChildScrollView(
+          child: Listener(
+              key: _keyImage,
+              onPointerDown: _updateLocation,
+              child: Stack(
+                children: [
+                  imgGetter(),
+                  Positioned(
+                      top: _yInImage -
+                          15, //for mouse pointer (TODO: add conditional for mobile devices)
+                      left: _xInImage - 15,
+                      child: SvgPicture.asset(
+                          'assets/svgs/circle-dashed-svgrepo-com.svg'))
+                ],
+              )),
+        ),
+      ),
+      Slider(
+          value: _sliderCurr,
+          max: _sliderMax,
+          onChanged: (val) {
+            setState(() {
+              _sliderCurr = val;
+              _rectHeight = _sliderCurr.floor() *
+                  (decodedImg.height / decodedImg.width) *
+                  (decodedImg.width > _screenWidth
+                      ? _screenWidth / decodedImg.width
+                      : 1);
+            });
+          }),
+      Text('$_inversionLabel: ${_sliderCurr.floor()}'),
+      Row(children: [
+        ElevatedButton(
+            onPressed: () => {clearInversion()},
+            child: Text('Clear Inversion')),
+        ElevatedButton(
+            onPressed: () => {invertSelectedImage()},
+            child: Text('Invert Image')),
+        ElevatedButton(
+            onPressed: () => {saveInvertedImage()}, child: Text('Save Image'))
+      ])
+    ];
+  }
+
+  List<Widget> combinedContent() {
+    return topBarButtons() + middleAndBottomBar();
   }
 }
