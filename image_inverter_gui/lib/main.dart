@@ -20,12 +20,14 @@ class ImgPainter extends CustomPainter {
   var rectHeight = 0.0;
   var shape = InversionShape.rect;
   var scaleFactor = 1.0;
+  bool repaintFlag;
 
   ImgPainter(this.centerX, this.centerY, this.magnitude, this.rectHeight,
-      this.shape, this.scaleFactor);
+      this.shape, this.scaleFactor, this.repaintFlag);
 
   @override
   void paint(Canvas canvas, Size size) {
+    print(repaintFlag);
     final tempMagnitude = magnitude * scaleFactor;
     final myPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -52,9 +54,9 @@ class ImgPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant ImgPainter oldDelegate) {
-    return oldDelegate.centerX != centerX ||
-        oldDelegate.centerY != centerY ||
-        oldDelegate.rectHeight != rectHeight;
+    return oldDelegate.rectHeight != rectHeight ||
+        oldDelegate.shape != shape ||
+        oldDelegate.repaintFlag != repaintFlag;
   }
 }
 
@@ -110,6 +112,7 @@ class _MyHomePageState extends State<MyHomePage> {
   int _prevScreenHeight = -1;
   int _displayWidth = 0;
   int _screenThreshold = 0;
+  bool _repaintFlag = false;
 
   void _updateLocation(PointerEvent details) {
     setState(() {
@@ -153,13 +156,18 @@ class _MyHomePageState extends State<MyHomePage> {
         imgCoords[1] = _yInImage.round();
       });
     }
+
+    if (_prevScreenHeight != screenHeight || _prevScreenWidth != _screenWidth) {
+      print("repaint flag: $_repaintFlag");
+      setState(() {
+        _repaintFlag = !_repaintFlag;
+      });
+    }
+
     _prevScreenWidth = _screenWidth;
     _prevScreenHeight = screenHeight;
 
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Image Inverter'),
-        ),
         body: Center(
             child: Column(children: topBarButtons() + middleAndBottomBar())));
   }
@@ -310,7 +318,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 _shape,
                 (decodedImg.width > _screenWidth
                     ? _screenWidth / decodedImg.width
-                    : 1)),
+                    : 1),
+                _repaintFlag),
             child: Image.memory(_imgMemory)),
       ]);
     } else {
@@ -451,6 +460,9 @@ class _MyHomePageState extends State<MyHomePage> {
 
   List<Widget> middleAndBottomBar() {
     return [
+      Visibility(
+          visible: _screenWidth < _screenThreshold,
+          child: Row(children: pixelSubtractSliders())),
       Expanded(
         child: SingleChildScrollView(
           child: Listener(
