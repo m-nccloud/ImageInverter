@@ -13,7 +13,7 @@ void main() {
   runApp(const MyApp());
 }
 
-class ImgPainter extends CustomPainter {
+class OutlinePainter extends CustomPainter {
   int centerX;
   int centerY;
   var magnitude = 0.0;
@@ -22,7 +22,7 @@ class ImgPainter extends CustomPainter {
   var scaleFactor = 1.0;
   bool repaintFlag;
 
-  ImgPainter(this.centerX, this.centerY, this.magnitude, this.rectHeight,
+  OutlinePainter(this.centerX, this.centerY, this.magnitude, this.rectHeight,
       this.shape, this.scaleFactor, this.repaintFlag);
 
   @override
@@ -53,7 +53,7 @@ class ImgPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant ImgPainter oldDelegate) {
+  bool shouldRepaint(covariant OutlinePainter oldDelegate) {
     return oldDelegate.rectHeight != rectHeight ||
         oldDelegate.shape != shape ||
         oldDelegate.repaintFlag != repaintFlag;
@@ -169,7 +169,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     return Scaffold(
         body: Center(
-            child: Column(children: topBarButtons() + middleAndBottomBar())));
+            child: Column(
+                children: topBarButtons() +
+                    (_imgFilePath.isNotEmpty && !_imageExceptionOccurred
+                        ? middleAndBottomBar()
+                        : [Container()]))));
   }
 
   void openFileManager() async {
@@ -310,7 +314,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_imgMemory.isNotEmpty) {
       return Stack(children: [
         CustomPaint(
-            foregroundPainter: ImgPainter(
+            foregroundPainter: OutlinePainter(
                 _xInImage.floor(),
                 _yInImage.floor(),
                 _sliderCurr,
