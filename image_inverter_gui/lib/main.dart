@@ -107,10 +107,11 @@ class _MyHomePageState extends State<MyHomePage> {
   late double rectRatio;
   final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
-  int _screenWidth = 0;
-  int _prevScreenWidth = -1;
-  int _prevScreenHeight = -1;
+  int _appWindowWidth = 0;
+  int _prevAppWindowWidth = -1;
+  int _prevAppWindowHeight = -1;
   int _displayWidth = 0;
+  int _displayHeight = 0;
   int _screenThreshold = 0;
   bool _repaintFlag = false;
 
@@ -135,37 +136,53 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    _displayWidth = GetSystemMetrics(SM_CXSCREEN);
+    _displayWidth = GetSystemMetrics(
+        SM_CXSCREEN); //the actual dimensions of display monitor 1
+    _displayHeight = GetSystemMetrics(SM_CYSCREEN);
     _screenThreshold = (_displayWidth * 0.7).floor();
   }
 
   @override
   Widget build(BuildContext context) {
-    _screenWidth = MediaQuery.of(context).size.width.round();
-    var screenHeight = MediaQuery.of(context).size.height.round();
-    if (_prevScreenWidth == -1) _prevScreenWidth = _screenWidth;
-    if (_prevScreenHeight == -1) _prevScreenHeight = screenHeight;
+    _appWindowWidth = MediaQuery.of(context).size.width.round();
+    var appWindowHeight = MediaQuery.of(context).size.height.round();
+    if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
+    if (_prevAppWindowHeight == -1) _prevAppWindowHeight = appWindowHeight;
 
     if (decodedImg.width > _displayWidth &&
-        (_prevScreenWidth != _screenWidth ||
-            _prevScreenHeight != screenHeight)) {
+        (_prevAppWindowWidth != _appWindowWidth ||
+            _prevAppWindowHeight != appWindowHeight)) {
       setState(() {
-        _xInImage *= (_screenWidth / _prevScreenWidth);
-        _yInImage *= (_screenWidth / _prevScreenWidth);
+        _xInImage *= (_appWindowWidth / _prevAppWindowWidth);
+        _yInImage *= (_appWindowWidth / _prevAppWindowWidth);
         imgCoords[0] = _xInImage.round();
         imgCoords[1] = _yInImage.round();
       });
+    } else if (decodedImg.height > _displayHeight &&
+        (_prevAppWindowHeight != appWindowHeight)) {
+      print('GAGAGOOEY Start');
+      print(imgCoords[0]);
+      print(imgCoords[1]);
+      print((appWindowHeight / _prevAppWindowHeight));
+      setState(() {
+        // _yInImage *= (appWindowHeight / _prevAppWindowHeight);
+        imgCoords[0] = _xInImage.round();
+        imgCoords[1] = _yInImage.round();
+      });
+      print(imgCoords[0]);
+      print(imgCoords[1]);
+      print('GAGAGOOEY End');
     }
-
-    if (_prevScreenHeight != screenHeight || _prevScreenWidth != _screenWidth) {
+    if (_prevAppWindowHeight != appWindowHeight ||
+        _prevAppWindowWidth != _appWindowWidth) {
       print("repaint flag: $_repaintFlag");
       setState(() {
         _repaintFlag = !_repaintFlag;
       });
     }
 
-    _prevScreenWidth = _screenWidth;
-    _prevScreenHeight = screenHeight;
+    _prevAppWindowWidth = _appWindowWidth;
+    _prevAppWindowHeight = appWindowHeight;
 
     return Scaffold(
         body: Center(
@@ -247,20 +264,22 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _yInImage = decodedImg.height / 2;
       _xInImage = decodedImg.width / 2;
-      if (decodedImg.width > _screenWidth) {
-        _xInImage /= (decodedImg.width / _screenWidth);
-        _yInImage /= (decodedImg.width / _screenWidth);
+      if (decodedImg.width > _appWindowWidth) {
+        _xInImage /= (decodedImg.width / _appWindowWidth);
+        _yInImage /= (decodedImg.width / _appWindowWidth);
       }
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
     });
+    print(imgCoords[0]);
+    print(imgCoords[1]);
   }
 
   void getCoords() {
     setState(() {
-      if (decodedImg.width > _screenWidth) {
-        var scaledXCoord = _xInImage * (decodedImg.width / _screenWidth);
-        var scaledYCoord = _yInImage * (decodedImg.width / _screenWidth);
+      if (decodedImg.width > _appWindowWidth) {
+        var scaledXCoord = _xInImage * (decodedImg.width / _appWindowWidth);
+        var scaledYCoord = _yInImage * (decodedImg.width / _appWindowWidth);
         imgCoords[0] = scaledXCoord.floor();
         imgCoords[1] = scaledYCoord.floor();
       }
@@ -320,8 +339,8 @@ class _MyHomePageState extends State<MyHomePage> {
                 _sliderCurr,
                 _rectHeight,
                 _shape,
-                (decodedImg.width > _screenWidth
-                    ? _screenWidth / decodedImg.width
+                (decodedImg.width > _appWindowWidth
+                    ? _appWindowWidth / decodedImg.width
                     : 1),
                 _repaintFlag),
             child: Image.memory(_imgMemory)),
@@ -454,7 +473,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     onPressed: () => {resetInversionCenter()},
                     child: Text("Reset Inversion Center")),
                 Visibility(
-                    visible: _screenWidth >= _screenThreshold,
+                    visible: _appWindowWidth >= _screenThreshold,
                     child: Row(children: pixelSubtractSliders()))
               ])),
         ],
@@ -465,7 +484,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Widget> middleAndBottomBar() {
     return [
       Visibility(
-          visible: _screenWidth < _screenThreshold,
+          visible: _appWindowWidth < _screenThreshold,
           child: Row(children: pixelSubtractSliders())),
       Expanded(
         child: SingleChildScrollView(
@@ -493,8 +512,8 @@ class _MyHomePageState extends State<MyHomePage> {
               _sliderCurr = val;
               _rectHeight = _sliderCurr.floor() *
                   (decodedImg.height / decodedImg.width) *
-                  (decodedImg.width > _screenWidth
-                      ? _screenWidth / decodedImg.width
+                  (decodedImg.width > _appWindowWidth
+                      ? _appWindowWidth / decodedImg.width
                       : 1);
             });
           }),
