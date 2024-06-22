@@ -158,21 +158,9 @@ class _MyHomePageState extends State<MyHomePage> {
         imgCoords[0] = _xInImage.round();
         imgCoords[1] = _yInImage.round();
       });
-    } else if (decodedImg.height > _displayHeight &&
-        (_prevAppWindowHeight != appWindowHeight)) {
-      print('GAGAGOOEY Start');
-      print(imgCoords[0]);
-      print(imgCoords[1]);
-      print((appWindowHeight / _prevAppWindowHeight));
-      setState(() {
-        // _yInImage *= (appWindowHeight / _prevAppWindowHeight);
-        imgCoords[0] = _xInImage.round();
-        imgCoords[1] = _yInImage.round();
-      });
-      print(imgCoords[0]);
-      print(imgCoords[1]);
-      print('GAGAGOOEY End');
     }
+    print(imgCoords[0]);
+    print(imgCoords[1]);
     if (_prevAppWindowHeight != appWindowHeight ||
         _prevAppWindowWidth != _appWindowWidth) {
       print("repaint flag: $_repaintFlag");
