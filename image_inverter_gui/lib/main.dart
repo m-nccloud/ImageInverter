@@ -27,7 +27,7 @@ class OutlinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    print(repaintFlag);
+    // print(repaintFlag);
     final tempMagnitude = magnitude * scaleFactor;
     final myPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -111,15 +111,23 @@ class _MyHomePageState extends State<MyHomePage> {
   int _prevAppWindowWidth = -1;
   int _prevAppWindowHeight = -1;
   int _displayWidth = 0;
-  int _displayHeight = 0;
   int _screenThreshold = 0;
   bool _repaintFlag = false;
+  Size? prevImageWidgetSize;
+  Size? imageWidgetSize;
+
+  Size? getImageWidgetSize(BuildContext? context) {
+    if (context == null) return null;
+    final box = context.findRenderObject() as RenderBox;
+    return box.size;
+  }
 
   void _updateLocation(PointerEvent details) {
     setState(() {
       RenderBox msRgn =
           _keyImage.currentContext!.findRenderObject() as RenderBox;
 
+      // print(msRgn.size);
       final imgPostion = msRgn.localToGlobal(Offset.zero);
       _imgPOSX = imgPostion.dx;
       _imgPOSY = imgPostion.dy;
@@ -134,16 +142,24 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
-    super.initState();
     SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     _displayWidth = GetSystemMetrics(
         SM_CXSCREEN); //the actual dimensions of display monitor 1
-    _displayHeight = GetSystemMetrics(SM_CYSCREEN);
     _screenThreshold = (_displayWidth * 0.7).floor();
+    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (imageWidgetSize != getImageWidgetSize(_keyImage.currentContext)) {
+        setState(() {
+          prevImageWidgetSize = imageWidgetSize;
+          imageWidgetSize = getImageWidgetSize(_keyImage.currentContext);
+        });
+      }
+    });
+
     _appWindowWidth = MediaQuery.of(context).size.width.round();
     var appWindowHeight = MediaQuery.of(context).size.height.round();
     if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
@@ -159,11 +175,25 @@ class _MyHomePageState extends State<MyHomePage> {
         imgCoords[1] = _yInImage.round();
       });
     }
-    print(imgCoords[0]);
-    print(imgCoords[1]);
+    print('\n--------------------');
+    print(_appWindowWidth);
+    print(imageWidgetSize?.width);
+    print(prevImageWidgetSize?.width);
+    if (decodedImg.width <= _displayWidth &&
+        decodedImg.width > _appWindowWidth &&
+        (_prevAppWindowWidth != _appWindowWidth ||
+            _prevAppWindowHeight != appWindowHeight)) {
+      print('bababooey');
+      setState(() {
+        _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
+        _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
+        imgCoords[0] = _xInImage.round();
+        imgCoords[1] = _yInImage.round();
+      });
+    }
     if (_prevAppWindowHeight != appWindowHeight ||
         _prevAppWindowWidth != _appWindowWidth) {
-      print("repaint flag: $_repaintFlag");
+      // print("repaint flag: $_repaintFlag");
       setState(() {
         _repaintFlag = !_repaintFlag;
       });
@@ -259,8 +289,6 @@ class _MyHomePageState extends State<MyHomePage> {
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
     });
-    print(imgCoords[0]);
-    print(imgCoords[1]);
   }
 
   void getCoords() {
