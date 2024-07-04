@@ -86,6 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _imgFilePath = '';
   Uint8List _imgMemory = Uint8List(0);
   bool _imageExceptionOccurred = false;
+  bool _resizedPrevFlag = false;
   bool _accumulate = true;
   int _inversionShape = 0;
   double _sliderCurr = 0;
@@ -142,22 +143,35 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   void initState() {
+    super.initState();
     SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     _displayWidth = GetSystemMetrics(
         SM_CXSCREEN); //the actual dimensions of display monitor 1
     _screenThreshold = (_displayWidth * 0.7).floor();
-    super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (imageWidgetSize != getImageWidgetSize(_keyImage.currentContext)) {
+      var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
+      print('getImageWidgetSize return val: $getImgWidgetSizeVal');
+      if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
           prevImageWidgetSize = imageWidgetSize;
-          imageWidgetSize = getImageWidgetSize(_keyImage.currentContext);
+          imageWidgetSize = getImgWidgetSizeVal;
         });
+        // if (_resizedPrevFlag) {
+        //   setState(() {
+        //     _resizedPrevFlag = false;
+        //     _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
+        //     _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
+        //     imgCoords[0] = _xInImage.round();
+        //     imgCoords[1] = _yInImage.round();
+        //   });
+        // }
       }
+      print('prev image widget width: ${prevImageWidgetSize?.width}');
+      print('image widget width: ${imageWidgetSize?.width}');
     });
 
     _appWindowWidth = MediaQuery.of(context).size.width.round();
@@ -175,16 +189,17 @@ class _MyHomePageState extends State<MyHomePage> {
         imgCoords[1] = _yInImage.round();
       });
     }
-    print('\n--------------------');
-    print(_appWindowWidth);
-    print(imageWidgetSize?.width);
-    print(prevImageWidgetSize?.width);
-    if (decodedImg.width <= _displayWidth &&
+    if (imageWidgetSize != null &&
+        imageWidgetSize?.width != 0 &&
+        prevImageWidgetSize != null &&
+        prevImageWidgetSize?.width != 0 &&
+        decodedImg.width <= _displayWidth &&
         decodedImg.width > _appWindowWidth &&
         (_prevAppWindowWidth != _appWindowWidth ||
             _prevAppWindowHeight != appWindowHeight)) {
       print('bababooey');
       setState(() {
+        _resizedPrevFlag = true;
         _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
         _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
         imgCoords[0] = _xInImage.round();
@@ -236,8 +251,8 @@ class _MyHomePageState extends State<MyHomePage> {
           _sliderCurr = 0;
           _sliderMax = sliderSize.toDouble();
           _imgMemory = Uint8List.view(pngBytes!.buffer);
-          resetInversionCenter();
         });
+        resetInversionCenter();
       }
     }
   }
