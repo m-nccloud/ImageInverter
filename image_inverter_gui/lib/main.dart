@@ -160,15 +160,6 @@ class _MyHomePageState extends State<MyHomePage> {
           prevImageWidgetSize = imageWidgetSize;
           imageWidgetSize = getImgWidgetSizeVal;
         });
-        // if (_resizedPrevFlag) {
-        //   setState(() {
-        //     _resizedPrevFlag = false;
-        //     _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
-        //     _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
-        //     imgCoords[0] = _xInImage.round();
-        //     imgCoords[1] = _yInImage.round();
-        //   });
-        // }
       }
       print('prev image widget width: ${prevImageWidgetSize?.width}');
       print('image widget width: ${imageWidgetSize?.width}');
@@ -204,6 +195,11 @@ class _MyHomePageState extends State<MyHomePage> {
         _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
         imgCoords[0] = _xInImage.round();
         imgCoords[1] = _yInImage.round();
+        _rectHeight = _sliderCurr.floor() *
+            (decodedImg.height / decodedImg.width) *
+            (decodedImg.width > _appWindowWidth
+                ? _appWindowWidth / decodedImg.width
+                : 1);
       });
     }
     if (_prevAppWindowHeight != appWindowHeight ||
