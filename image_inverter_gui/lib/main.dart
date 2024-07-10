@@ -195,17 +195,16 @@ class _MyHomePageState extends State<MyHomePage> {
         _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
         imgCoords[0] = _xInImage.round();
         imgCoords[1] = _yInImage.round();
+      });
+    }
+    if (_prevAppWindowHeight != appWindowHeight ||
+        _prevAppWindowWidth != _appWindowWidth) {
+      setState(() {
         _rectHeight = _sliderCurr.floor() *
             (decodedImg.height / decodedImg.width) *
             (decodedImg.width > _appWindowWidth
                 ? _appWindowWidth / decodedImg.width
                 : 1);
-      });
-    }
-    if (_prevAppWindowHeight != appWindowHeight ||
-        _prevAppWindowWidth != _appWindowWidth) {
-      // print("repaint flag: $_repaintFlag");
-      setState(() {
         _repaintFlag = !_repaintFlag;
       });
     }
