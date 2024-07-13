@@ -27,7 +27,6 @@ class OutlinePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // print(repaintFlag);
     final tempMagnitude = magnitude * scaleFactor;
     final myPaint = Paint()
       ..style = PaintingStyle.stroke
@@ -128,7 +127,6 @@ class _MyHomePageState extends State<MyHomePage> {
       RenderBox msRgn =
           _keyImage.currentContext!.findRenderObject() as RenderBox;
 
-      // print(msRgn.size);
       final imgPostion = msRgn.localToGlobal(Offset.zero);
       _imgPOSX = imgPostion.dx;
       _imgPOSY = imgPostion.dy;
@@ -154,16 +152,30 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
-      print('getImageWidgetSize return val: $getImgWidgetSizeVal');
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
           prevImageWidgetSize = imageWidgetSize;
           imageWidgetSize = getImgWidgetSizeVal;
         });
       }
-      print('prev image widget width: ${prevImageWidgetSize?.width}');
-      print('image widget width: ${imageWidgetSize?.width}');
+      print(".>=======<.");
+      // print(imageWidgetSize!.width);
+      // print(prevImageWidgetSize!.width);
     });
+
+    if (imageWidgetSize != null &&
+        _resizedPrevFlag &&
+        imageWidgetSize!.width == decodedImg.width) {
+      if (prevImageWidgetSize!.width > 0) {
+        _resizedPrevFlag = false;
+        setState(() {
+          _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
+          _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
+          imgCoords[0] = _xInImage.round();
+          imgCoords[1] = _yInImage.round();
+        });
+      }
+    }
 
     _appWindowWidth = MediaQuery.of(context).size.width.round();
     var appWindowHeight = MediaQuery.of(context).size.height.round();
@@ -188,7 +200,6 @@ class _MyHomePageState extends State<MyHomePage> {
         decodedImg.width > _appWindowWidth &&
         (_prevAppWindowWidth != _appWindowWidth ||
             _prevAppWindowHeight != appWindowHeight)) {
-      print('bababooey');
       setState(() {
         _resizedPrevFlag = true;
         _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
