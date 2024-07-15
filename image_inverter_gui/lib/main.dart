@@ -86,6 +86,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Uint8List _imgMemory = Uint8List(0);
   bool _imageExceptionOccurred = false;
   bool _resizedPrevFlag = false;
+  bool _appFullScreened = false;
   bool _accumulate = true;
   int _inversionShape = 0;
   double _sliderCurr = 0;
@@ -152,6 +153,21 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
+      // var isNullOrZero = false;
+      // var count = 0;
+      // if (getImgWidgetSizeVal == null || getImgWidgetSizeVal.width == 0)
+      //   isNullOrZero = true;
+      // while (isNullOrZero) {
+      //   getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
+      //   if (getImgWidgetSizeVal != null && getImgWidgetSizeVal.width > 0)
+      //     isNullOrZero = false;
+      //   if (count == 10) {
+      //     print("LOOP OVERDFLOWD");
+      //     break;
+      //   }
+      //   count++;
+      // }
+
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
           prevImageWidgetSize = imageWidgetSize;
@@ -169,6 +185,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (prevImageWidgetSize!.width > 0) {
         _resizedPrevFlag = false;
         setState(() {
+          _appFullScreened = true;
           _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
           _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
           imgCoords[0] = _xInImage.round();
@@ -202,10 +219,15 @@ class _MyHomePageState extends State<MyHomePage> {
             _prevAppWindowHeight != appWindowHeight)) {
       setState(() {
         _resizedPrevFlag = true;
-        _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
-        _yInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
+        _xInImage *= _appFullScreened
+            ? (prevImageWidgetSize!.width / imageWidgetSize!.width)
+            : (imageWidgetSize!.width / prevImageWidgetSize!.width);
+        _yInImage *= _appFullScreened
+            ? (prevImageWidgetSize!.width / imageWidgetSize!.width)
+            : (imageWidgetSize!.width / prevImageWidgetSize!.width);
         imgCoords[0] = _xInImage.round();
         imgCoords[1] = _yInImage.round();
+        if (_appFullScreened) _appFullScreened = false;
       });
     }
     if (_prevAppWindowHeight != appWindowHeight ||
@@ -310,6 +332,8 @@ class _MyHomePageState extends State<MyHomePage> {
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
     });
+    print(_xInImage);
+    print(_yInImage);
   }
 
   void getCoords() {
