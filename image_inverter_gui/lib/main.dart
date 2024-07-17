@@ -152,21 +152,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      print("<-=->");
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
-      // var isNullOrZero = false;
-      // var count = 0;
-      // if (getImgWidgetSizeVal == null || getImgWidgetSizeVal.width == 0)
-      //   isNullOrZero = true;
-      // while (isNullOrZero) {
-      //   getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
-      //   if (getImgWidgetSizeVal != null && getImgWidgetSizeVal.width > 0)
-      //     isNullOrZero = false;
-      //   if (count == 10) {
-      //     print("LOOP OVERDFLOWD");
-      //     break;
-      //   }
-      //   count++;
-      // }
 
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
@@ -174,9 +161,6 @@ class _MyHomePageState extends State<MyHomePage> {
           imageWidgetSize = getImgWidgetSizeVal;
         });
       }
-      print(".>=======<.");
-      // print(imageWidgetSize!.width);
-      // print(prevImageWidgetSize!.width);
     });
 
     if (imageWidgetSize != null &&
@@ -244,7 +228,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _prevAppWindowWidth = _appWindowWidth;
     _prevAppWindowHeight = appWindowHeight;
-
+    print(">-=-<");
     return Scaffold(
         body: Center(
             child: Column(
@@ -332,8 +316,8 @@ class _MyHomePageState extends State<MyHomePage> {
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
     });
-    print(_xInImage);
-    print(_yInImage);
+    // print(_xInImage);
+    // print(_yInImage);
   }
 
   void getCoords() {
