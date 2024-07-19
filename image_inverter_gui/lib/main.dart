@@ -85,7 +85,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String _imgFilePath = '';
   Uint8List _imgMemory = Uint8List(0);
   bool _imageExceptionOccurred = false;
-  bool _resizedPrevFlag = false;
+  bool _widthOnlyOverflow = false;
   bool _appFullScreened = false;
   bool _accumulate = true;
   int _inversionShape = 0;
@@ -152,22 +152,25 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print("<-=->");
+      print("<post frame callback $prevImageWidgetSize-=$imageWidgetSize->");
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
 
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
-          prevImageWidgetSize = imageWidgetSize;
-          imageWidgetSize = getImgWidgetSizeVal;
+          if (imageWidgetSize != null && imageWidgetSize!.width != 0)
+            prevImageWidgetSize = imageWidgetSize;
+          if (getImgWidgetSizeVal!.width != 0)
+            imageWidgetSize = getImgWidgetSizeVal;
         });
       }
     });
 
-    if (imageWidgetSize != null &&
-        _resizedPrevFlag &&
+    if (_widthOnlyOverflow &&
+        imageWidgetSize != null &&
         imageWidgetSize!.width == decodedImg.width) {
       if (prevImageWidgetSize!.width > 0) {
-        _resizedPrevFlag = false;
+        print("asdasd");
+        _widthOnlyOverflow = false;
         setState(() {
           _appFullScreened = true;
           _xInImage *= (imageWidgetSize!.width / prevImageWidgetSize!.width);
@@ -198,20 +201,22 @@ class _MyHomePageState extends State<MyHomePage> {
         prevImageWidgetSize != null &&
         prevImageWidgetSize?.width != 0 &&
         decodedImg.width <= _displayWidth &&
-        decodedImg.width > _appWindowWidth &&
-        (_prevAppWindowWidth != _appWindowWidth ||
-            _prevAppWindowHeight != appWindowHeight)) {
+        decodedImg.width > _appWindowWidth) {
       setState(() {
-        _resizedPrevFlag = true;
-        _xInImage *= _appFullScreened
-            ? (prevImageWidgetSize!.width / imageWidgetSize!.width)
-            : (imageWidgetSize!.width / prevImageWidgetSize!.width);
-        _yInImage *= _appFullScreened
-            ? (prevImageWidgetSize!.width / imageWidgetSize!.width)
-            : (imageWidgetSize!.width / prevImageWidgetSize!.width);
-        imgCoords[0] = _xInImage.round();
-        imgCoords[1] = _yInImage.round();
-        if (_appFullScreened) _appFullScreened = false;
+        print("askdljnaksjdn");
+        _widthOnlyOverflow = true;
+        if ((_prevAppWindowWidth != _appWindowWidth ||
+            _prevAppWindowHeight != appWindowHeight)) {
+          _xInImage *= _appFullScreened
+              ? (prevImageWidgetSize!.width / imageWidgetSize!.width)
+              : (imageWidgetSize!.width / prevImageWidgetSize!.width);
+          _yInImage *= _appFullScreened
+              ? (prevImageWidgetSize!.width / imageWidgetSize!.width)
+              : (imageWidgetSize!.width / prevImageWidgetSize!.width);
+          imgCoords[0] = _xInImage.round();
+          imgCoords[1] = _yInImage.round();
+          if (_appFullScreened) _appFullScreened = false;
+        }
       });
     }
     if (_prevAppWindowHeight != appWindowHeight ||
@@ -228,7 +233,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _prevAppWindowWidth = _appWindowWidth;
     _prevAppWindowHeight = appWindowHeight;
-    print(">-=-<");
+    print("build method >-=-<");
     return Scaffold(
         body: Center(
             child: Column(
@@ -310,6 +315,7 @@ class _MyHomePageState extends State<MyHomePage> {
       _yInImage = decodedImg.height / 2;
       _xInImage = decodedImg.width / 2;
       if (decodedImg.width > _appWindowWidth) {
+        print("adsadasdasd");
         _xInImage /= (decodedImg.width / _appWindowWidth);
         _yInImage /= (decodedImg.width / _appWindowWidth);
       }
