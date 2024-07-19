@@ -152,7 +152,8 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print("<post frame callback $prevImageWidgetSize-=$imageWidgetSize->");
+      print(
+          "<post frame callback prev size:$prevImageWidgetSize-= curr size:$imageWidgetSize->");
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
 
       if (imageWidgetSize != getImgWidgetSizeVal) {
@@ -165,11 +166,11 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     });
 
+    // app window fullscreened
     if (_widthOnlyOverflow &&
         imageWidgetSize != null &&
         imageWidgetSize!.width == decodedImg.width) {
       if (prevImageWidgetSize!.width > 0) {
-        print("asdasd");
         _widthOnlyOverflow = false;
         setState(() {
           _appFullScreened = true;
@@ -186,6 +187,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
     if (_prevAppWindowHeight == -1) _prevAppWindowHeight = appWindowHeight;
 
+    // img width > monitor width
     if (decodedImg.width > _displayWidth &&
         (_prevAppWindowWidth != _appWindowWidth ||
             _prevAppWindowHeight != appWindowHeight)) {
@@ -196,6 +198,7 @@ class _MyHomePageState extends State<MyHomePage> {
         imgCoords[1] = _yInImage.round();
       });
     }
+    // img width > app window, <= monitor width
     if (imageWidgetSize != null &&
         imageWidgetSize?.width != 0 &&
         prevImageWidgetSize != null &&
@@ -203,7 +206,6 @@ class _MyHomePageState extends State<MyHomePage> {
         decodedImg.width <= _displayWidth &&
         decodedImg.width > _appWindowWidth) {
       setState(() {
-        print("askdljnaksjdn");
         _widthOnlyOverflow = true;
         if ((_prevAppWindowWidth != _appWindowWidth ||
             _prevAppWindowHeight != appWindowHeight)) {
