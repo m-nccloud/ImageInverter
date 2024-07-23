@@ -203,6 +203,7 @@ class _MyHomePageState extends State<MyHomePage> {
         imageWidgetSize?.width != 0 &&
         prevImageWidgetSize != null &&
         prevImageWidgetSize?.width != 0 &&
+        prevImageWidgetSize?.width != decodedImg.width &&
         decodedImg.width <= _displayWidth &&
         decodedImg.width > _appWindowWidth) {
       setState(() {
