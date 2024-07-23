@@ -152,8 +152,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      print(
-          "<post frame callback prev size:$prevImageWidgetSize-= curr size:$imageWidgetSize->");
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
 
       if (imageWidgetSize != getImgWidgetSizeVal) {
@@ -236,7 +234,6 @@ class _MyHomePageState extends State<MyHomePage> {
 
     _prevAppWindowWidth = _appWindowWidth;
     _prevAppWindowHeight = appWindowHeight;
-    print("build method >-=-<");
     return Scaffold(
         body: Center(
             child: Column(
@@ -318,15 +315,12 @@ class _MyHomePageState extends State<MyHomePage> {
       _yInImage = decodedImg.height / 2;
       _xInImage = decodedImg.width / 2;
       if (decodedImg.width > _appWindowWidth) {
-        print("adsadasdasd");
         _xInImage /= (decodedImg.width / _appWindowWidth);
         _yInImage /= (decodedImg.width / _appWindowWidth);
       }
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
     });
-    // print(_xInImage);
-    // print(_yInImage);
   }
 
   void getCoords() {
