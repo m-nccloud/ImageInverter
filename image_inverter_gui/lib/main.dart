@@ -10,7 +10,7 @@ import 'package:win32/win32.dart';
 import 'enums.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ImageInverter());
 }
 
 class OutlinePainter extends CustomPainter {
@@ -59,8 +59,8 @@ class OutlinePainter extends CustomPainter {
   }
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class ImageInverter extends StatelessWidget {
+  const ImageInverter({super.key});
 
   // This widget is the root of your application.
   @override
@@ -71,17 +71,17 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: MyHomePage(),
+      home: ImgInverterWidget(),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
+class ImgInverterWidget extends StatefulWidget {
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ImgInverterWidget> createState() => _ImgInverterState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _ImgInverterState extends State<ImgInverterWidget> {
   String _imgFilePath = '';
   Uint8List _imgMemory = Uint8List(0);
   bool _imageExceptionOccurred = false;
@@ -89,6 +89,13 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _appFullScreened = false;
   bool _accumulate = true;
   int _inversionShape = 0;
+  int _appWindowWidth = 0;
+  int _prevAppWindowWidth = -1;
+  int _prevAppWindowHeight = -1;
+  int _displayWidth = 0;
+  int _screenThreshold = 0;
+  bool _repaintFlag = false;
+  double _imgWidgetPadding = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
   String _inversionLabel = "Inversion Width";
@@ -108,12 +115,6 @@ class _MyHomePageState extends State<MyHomePage> {
   late double rectRatio;
   final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
-  int _appWindowWidth = 0;
-  int _prevAppWindowWidth = -1;
-  int _prevAppWindowHeight = -1;
-  int _displayWidth = 0;
-  int _screenThreshold = 0;
-  bool _repaintFlag = false;
   Size? prevImageWidgetSize;
   Size? imageWidgetSize;
 
@@ -153,7 +154,6 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
-
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
           if (imageWidgetSize != null && imageWidgetSize!.width != 0)
@@ -163,6 +163,17 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     });
+
+    _appWindowWidth = MediaQuery.of(context).size.width.round();
+    var appWindowHeight = MediaQuery.of(context).size.height.round();
+    print(appWindowHeight);
+    if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
+    if (_prevAppWindowHeight == -1) _prevAppWindowHeight = appWindowHeight;
+
+    if (decodedImg.height < appWindowHeight)
+      setState(() {
+        _imgWidgetPadding = (decodedImg.height - appWindowHeight) / 2;
+      });
 
     // app window fullscreened
     if (_widthOnlyOverflow &&
@@ -180,11 +191,6 @@ class _MyHomePageState extends State<MyHomePage> {
       }
     }
 
-    _appWindowWidth = MediaQuery.of(context).size.width.round();
-    var appWindowHeight = MediaQuery.of(context).size.height.round();
-    if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
-    if (_prevAppWindowHeight == -1) _prevAppWindowHeight = appWindowHeight;
-
     // img width > monitor width
     if (decodedImg.width > _displayWidth &&
         (_prevAppWindowWidth != _appWindowWidth ||
@@ -196,6 +202,7 @@ class _MyHomePageState extends State<MyHomePage> {
         imgCoords[1] = _yInImage.round();
       });
     }
+
     // img width > app window, <= monitor width
     if (imageWidgetSize != null &&
         imageWidgetSize?.width != 0 &&
@@ -205,6 +212,7 @@ class _MyHomePageState extends State<MyHomePage> {
         decodedImg.width <= _displayWidth &&
         decodedImg.width > _appWindowWidth) {
       setState(() {
+        print("GAGAGOEEY");
         _widthOnlyOverflow = true;
         if ((_prevAppWindowWidth != _appWindowWidth ||
             _prevAppWindowHeight != appWindowHeight)) {
@@ -534,6 +542,7 @@ class _MyHomePageState extends State<MyHomePage> {
       Visibility(
           visible: _appWindowWidth < _screenThreshold,
           child: Row(children: pixelSubtractSliders())),
+      SizedBox(height: _imgWidgetPadding),
       Expanded(
         child: SingleChildScrollView(
           child: Listener(
