@@ -87,14 +87,16 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _imageExceptionOccurred = false;
   bool _widthOnlyOverflow = false;
   bool _appFullScreened = false;
+  bool _appFullScreenedWithPadding = false;
+  bool _repaintFlag = false;
   bool _accumulate = true;
   int _inversionShape = 0;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
   int _prevAppWindowHeight = -1;
   int _displayWidth = 0;
+  int _displayHeight = 0;
   int _screenThreshold = 0;
-  bool _repaintFlag = false;
   double _imgWidgetPadding = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
@@ -146,7 +148,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     super.initState();
     SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     _displayWidth = GetSystemMetrics(
-        SM_CXSCREEN); //the actual dimensions of display monitor 1
+        SM_CXSCREEN); //the actual pixel width of display monitor 1
+    _displayHeight = GetSystemMetrics(
+        SM_CYSCREEN); //the actual pixel height of display monitor 1
     _screenThreshold = (_displayWidth * 0.7).floor();
   }
 
@@ -170,11 +174,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
     if (_prevAppWindowHeight == -1) _prevAppWindowHeight = appWindowHeight;
 
-    if (decodedImg.height < appWindowHeight)
-      setState(() {
-        _imgWidgetPadding = (decodedImg.height - appWindowHeight) / 2;
-      });
-
     // app window fullscreened
     if (_widthOnlyOverflow &&
         imageWidgetSize != null &&
@@ -189,6 +188,24 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           imgCoords[1] = _yInImage.round();
         });
       }
+    }
+
+    if (imageWidgetSize != null &&
+        appWindowHeight >= (_displayHeight - 30) &&
+        decodedImg.height < appWindowHeight) {
+      var paddingVal = (appWindowHeight - decodedImg.height) / 2;
+      setState(() {
+        _imgWidgetPadding = (paddingVal - paddingVal / 2);
+        _appFullScreenedWithPadding = true;
+      });
+    }
+
+    if (_appFullScreenedWithPadding &&
+        appWindowHeight < (_displayHeight - 30)) {
+      setState(() {
+        _imgWidgetPadding = 0;
+        _appFullScreenedWithPadding = false;
+      });
     }
 
     // img width > monitor width
@@ -212,7 +229,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         decodedImg.width <= _displayWidth &&
         decodedImg.width > _appWindowWidth) {
       setState(() {
-        print("GAGAGOEEY");
         _widthOnlyOverflow = true;
         if ((_prevAppWindowWidth != _appWindowWidth ||
             _prevAppWindowHeight != appWindowHeight)) {
