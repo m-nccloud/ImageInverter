@@ -62,7 +62,6 @@ class OutlinePainter extends CustomPainter {
 class ImageInverter extends StatelessWidget {
   const ImageInverter({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -160,17 +159,18 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
-          if (imageWidgetSize != null && imageWidgetSize!.width != 0)
+          if (imageWidgetSize != null && imageWidgetSize!.width != 0) {
             prevImageWidgetSize = imageWidgetSize;
-          if (getImgWidgetSizeVal!.width != 0)
+          }
+          if (getImgWidgetSizeVal!.width != 0) {
             imageWidgetSize = getImgWidgetSizeVal;
+          }
         });
       }
     });
 
     _appWindowWidth = MediaQuery.of(context).size.width.round();
     var appWindowHeight = MediaQuery.of(context).size.height.round();
-    print(appWindowHeight);
     if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
     if (_prevAppWindowHeight == -1) _prevAppWindowHeight = appWindowHeight;
 
@@ -232,12 +232,11 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         _widthOnlyOverflow = true;
         if ((_prevAppWindowWidth != _appWindowWidth ||
             _prevAppWindowHeight != appWindowHeight)) {
-          _xInImage *= _appFullScreened
+          var ratio = _appFullScreened
               ? (prevImageWidgetSize!.width / imageWidgetSize!.width)
               : (imageWidgetSize!.width / prevImageWidgetSize!.width);
-          _yInImage *= _appFullScreened
-              ? (prevImageWidgetSize!.width / imageWidgetSize!.width)
-              : (imageWidgetSize!.width / prevImageWidgetSize!.width);
+          _xInImage *= ratio;
+          _yInImage *= ratio;
           imgCoords[0] = _xInImage.round();
           imgCoords[1] = _yInImage.round();
           if (_appFullScreened) _appFullScreened = false;
@@ -288,10 +287,13 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         ui.Image uiImg = await convertImageToFlutterUi(decodedImg);
         final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
         setState(() {
+          prevImageWidgetSize = null;
+          imageWidgetSize = null;
           sliderSize = decodedImg.width;
           _sliderCurr = 0;
           _sliderMax = sliderSize.toDouble();
           _imgMemory = Uint8List.view(pngBytes!.buffer);
+          _rectHeight = 0;
         });
         resetInversionCenter();
       }
