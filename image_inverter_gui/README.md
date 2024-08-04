@@ -7,6 +7,8 @@ There are currently three shapes available:
 
 There is also an option for "accumulating", which will retain subsequent inversions instead of clearing the image after each. This is enabled by default.
 
+Additionally, you can choose the value of each rgb color subtracted from the base pixel rgb values to create the inversion. Try experimenting with different values for interesting results :D
+
 This is my first Flutter app so please let me know if there's anything I can improve!
 
 Current WIP:  
@@ -16,9 +18,9 @@ Current WIP:
 
 To run:  
 Windows:  
--If compiling from source: make sure you have flutter installed on your machine, clone the repo and from the image_inverter_gui folder level run flutter run and select Windows or Edge if applicable. If you have issues, running flutter pub get should resolve them, if that doesn't work feel free to open a bug report and I'll do my best to investigate  
+-If compiling from source: make sure you have flutter installed on your machine, clone the repo and from the `image_inverter_gui` folder level run flutter run and select Windows or Edge if applicable. If you have issues, running `flutter pub get` should resolve them, if that doesn't work feel free to open a bug report and I'll do my best to investigate  
 -Otherwise, just download the .exe file from the 'Releases' section in the repo  
 
 -- MacOS and Linux builds and instructions coming soon --
 
-Feel free to check out the image_inverter_examples folder for inspiration if you like and have fun inverting :)
+Feel free to check out the `image_inverter_examples folder` for inspiration if you like and have fun inverting :)
