@@ -150,9 +150,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     super.initState();
     SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
     _displayWidth = GetSystemMetrics(
-        SM_CXSCREEN); //the actual pixel width of display monitor 1
+        SM_CXSCREEN); // the actual pixel width of display monitor 1
     _displayHeight = GetSystemMetrics(
-        SM_CYSCREEN); //the actual pixel height of display monitor 1
+        SM_CYSCREEN); // the actual pixel height of display monitor 1
     _screenThreshold = (_displayWidth * 0.7).floor();
   }
 
@@ -166,12 +166,15 @@ class _ImgInverterState extends State<ImgInverterWidget> {
             prevImageWidgetSize = imageWidgetSize;
           }
           if (getImgWidgetSizeVal!.width != 0) {
-            imageWidgetSize = getImgWidgetSizeVal;
+            imageWidgetSize = (getImgWidgetSizeVal.width <= decodedImg.width
+                ? getImgWidgetSizeVal
+                : Size(decodedImg.width.toDouble(), 0)); //todo: refactor
           }
         });
       }
     });
 
+    // get initial app window change
     _appWindowWidth = MediaQuery.of(context).size.width.round();
     var appWindowHeight = MediaQuery.of(context).size.height.round();
     if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
@@ -193,6 +196,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       }
     }
 
+    // set padding if applicable
     if (imageWidgetSize != null &&
         appWindowHeight >= (_displayHeight - 30) &&
         decodedImg.height < appWindowHeight) {
@@ -203,6 +207,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       });
     }
 
+    // revert padding
     if (_appFullScreenedWithPadding &&
         appWindowHeight < (_displayHeight - 30)) {
       setState(() {
@@ -260,6 +265,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     _prevAppWindowWidth = _appWindowWidth;
     _prevAppWindowHeight = appWindowHeight;
+
     return Scaffold(
         body: Center(
             child: Column(
@@ -290,8 +296,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         ui.Image uiImg = await convertImageToFlutterUi(decodedImg);
         final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
         setState(() {
-          prevImageWidgetSize = null;
-          imageWidgetSize = null;
           sliderSize = decodedImg.width;
           _sliderCurr = 0;
           _sliderMax = sliderSize.toDouble();
