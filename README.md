@@ -17,9 +17,10 @@ Current WIP:
 To run:
 
 Windows:
--If compiling from source: make sure you have flutter installed on your machine, clone the repo and from the `image_inverter_gui` folder level run `flutter run` and select Windows or Edge if applicable
+-If compiling from source: make sure you have flutter installed on your machine, clone the repo and from the `image_inverter_gui` folder level run `flutter run` and select Windows or Edge if applicable. If you have issues, running `flutter pub get` should resolve them,
+if that doesn't work feel free to open a bug report and I'll do my best to investigate
 -Otherwise, just download the .exe file from the 'Releases' section in the repo
 
 -- MacOS and Linux builds and instructions coming soon --
 
-Feel free to check out the imageinverter_examples folder for inspiration if you like and have fun inverting :)
+Feel free to check out the image_inverter_examples folder for inspiration if you like and have fun inverting :)
