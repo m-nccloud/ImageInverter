@@ -1,3 +1,5 @@
+Image Inverter
+--------------
 Image Inverter is a creatively named cross-platform photo editing and art generation application that lets you "draw" over an image by inverting selected portions of its pixels.
 
 There are currently three shapes available:  
@@ -6,6 +8,7 @@ There are currently three shapes available:
 -Circle, which is pretty self explanatory (max diameter matches the image width)  
 
 There is also an option for "accumulating", which will retain subsequent inversions instead of clearing the image after each. This is enabled by default.  
+
 Additionally, you can choose the value of each rgb color subtracted from the base pixel rgb values to create the inversion. Try experimenting with different values for interesting results :D
 
 This is my first Flutter app so please let me know if there's anything I can improve!
@@ -33,8 +36,10 @@ Screenshots and examples:
 ![cmatrix2_abstract_bg](https://github.com/user-attachments/assets/9c2d53eb-9f88-4f35-acce-9a772c60058e)
 ![cmatrix_abstract_bg2](https://github.com/user-attachments/assets/ee0bec4d-34d8-4e20-bd14-e420eeb312b6)
 
-Neon Genesis Evangelion pictures sourced from: https://wallpaper-mania.com/wp-content/uploads/2018/09/High_resolution_wallpaper_background_ID_77702143806.jpg, https://64.media.tumblr.com/a37f188cb85d82bbeb633cafd71faffc/1ae97b1da8847271-74/s2048x3072/ad08b0f03c96cfa1f4490927cd808e52be9041c8.png  
-Shaggy picture by Guilherme Freitas: https://cdna.artstation.com/p/assets/images/images/015/693/500/4k/guilherme-freitas-shaggyjpg.jpg?1549288363  
-Swirl wallpaper: https://pixabay.com/illustrations/abstract-art-creativity-graphic-3135533/  
+Neon Genesis Evangelion pictures sourced from: https://wallpaper-mania.com/wp-content/uploads/2018/09/High_resolution_wallpaper_background_ID_77702143806.jpg, https://64.media.tumblr.com/a37f188cb85d82bbeb633cafd71faffc/1ae97b1da8847271-74/s2048x3072/ad08b0f03c96cfa1f4490927cd808e52be9041c8.png
+
+Shaggy picture by Guilherme Freitas: https://cdna.artstation.com/p/assets/images/images/015/693/500/4k/guilherme-freitas-shaggyjpg.jpg?1549288363
+
+Swirl wallpaper: https://pixabay.com/illustrations/abstract-art-creativity-graphic-3135533/
 
 All other example images were created by me
