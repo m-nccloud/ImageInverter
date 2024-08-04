@@ -22,3 +22,11 @@ Windows:
 -- MacOS and Linux builds and instructions coming soon --
 
 Feel free to check out the image_inverter_examples folder for inspiration if you like and have fun inverting :)
+---------------------------------------------------------------------------------------------------------------
+Screenshots and examples:
+![image](https://github.com/user-attachments/assets/64fd7b63-5b74-4040-87d4-78059a7601f1)
+![palms](https://github.com/user-attachments/assets/f635069c-12ea-4ba4-a07e-c59b41ae52fe)
+![asdasd](https://github.com/user-attachments/assets/2e49f990-845c-4746-b254-c1b8dc5618df)
+![eva_inverted6](https://github.com/user-attachments/assets/4cea60c5-14e6-4f54-adc0-d152a6555a56)
+![cmatrix2_abstract_bg](https://github.com/user-attachments/assets/9c2d53eb-9f88-4f35-acce-9a772c60058e)
+![cmatrix_abstract_bg2](https://github.com/user-attachments/assets/ee0bec4d-34d8-4e20-bd14-e420eeb312b6)
