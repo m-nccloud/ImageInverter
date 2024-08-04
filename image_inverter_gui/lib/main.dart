@@ -8,6 +8,7 @@ import 'package:image/image.dart' as img;
 import 'package:image_inverter_gui_flutter/inversion_functions.dart';
 import 'package:win32/win32.dart';
 import 'enums.dart';
+import 'dart:async';
 
 void main() {
   runApp(const ImageInverter());
@@ -82,6 +83,7 @@ class ImgInverterWidget extends StatefulWidget {
 
 class _ImgInverterState extends State<ImgInverterWidget> {
   String _imgFilePath = '';
+  String _loadingText = '\t\tInverting image';
   Uint8List _imgMemory = Uint8List(0);
   bool _imageExceptionOccurred = false;
   bool _widthOnlyOverflow = false;
@@ -89,6 +91,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _appFullScreenedWithPadding = false;
   bool _repaintFlag = false;
   bool _accumulate = true;
+  bool _isLoading = false;
   int _inversionShape = 0;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
@@ -108,10 +111,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   double _yInImage = 0;
   double _rectHeight = 0.0;
   InversionShape _shape = InversionShape.rect;
+  img.Image decodedImg = img.Image.empty();
   var _pixelSliderCurr = [255.0, 255.0, 255.0];
   var _pixelSliderCurrInt = [255, 255, 255];
   late ui.Codec codec;
-  img.Image decodedImg = img.Image.empty();
   late int sliderSize;
   late double rectRatio;
   final List<int> imgCoords = List<int>.filled(2, -1);
@@ -294,14 +297,32 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           _sliderMax = sliderSize.toDouble();
           _imgMemory = Uint8List.view(pngBytes!.buffer);
           _rectHeight = 0;
+          _imgWidgetPadding = 0;
         });
         resetInversionCenter();
       }
     }
   }
 
+  void writeLoadingMessage(timer) {
+    setState(() {
+      _loadingText += " .";
+      if (timer.tick == 4) {
+        _loadingText = "\t\tInverting image";
+      }
+    });
+  }
+
   void invertSelectedImage() async {
     getCoords();
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    var inversionTimer =
+        Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
+
     var inputImage = _accumulate
         ? decodedImg
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
@@ -312,6 +333,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
+      inversionTimer.cancel();
+      _isLoading = false;
+      _loadingText = "\t\tInverting image";
     });
   }
 
@@ -513,7 +537,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                         _shape = InversionShape.rect;
                       });
                     }),
-                Text("Box"),
+                Text("\tBox"),
                 Radio(
                     value: 1,
                     groupValue: _inversionShape,
@@ -524,7 +548,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                         _shape = InversionShape.box;
                       });
                     }),
-                Text("Circle"),
+                Text("\tCircle"),
                 Radio(
                     value: 2,
                     groupValue: _inversionShape,
@@ -535,7 +559,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                         _shape = InversionShape.circle;
                       });
                     }),
-                Text("Accumulate"),
+                Text("\tAccumulate"),
                 Checkbox(
                     value: _accumulate,
                     onChanged: (bool? value) => {
@@ -601,7 +625,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
             onPressed: () => {invertSelectedImage()},
             child: Text('Invert Image')),
         ElevatedButton(
-            onPressed: () => {saveInvertedImage()}, child: Text('Save Image'))
+            onPressed: () => {saveInvertedImage()}, child: Text('Save Image')),
+        Visibility(visible: _isLoading, child: Text(_loadingText))
       ])
     ];
   }
