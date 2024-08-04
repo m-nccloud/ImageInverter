@@ -22,4 +22,4 @@ Windows:
 
 -- MacOS and Linux builds and instructions coming soon --
 
-Feel free to check out the image_inverter_examples folder for inspiration if you like and have fun inverting :)
+Feel free to check out the imageinverter_examples folder for inspiration if you like and have fun inverting :)
