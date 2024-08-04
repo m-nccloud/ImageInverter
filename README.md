@@ -5,7 +5,7 @@ There are currently three shapes available:
 -Box, which is like rect but square, with max edge length matching the width of the image  
 -Circle, which is pretty self explanatory (max diameter matches the image width)  
 
-There is also an option for "accumulating", which will retain subsequent inversions instead of clearing the image after each. This is enabled by default.
+There is also an option for "accumulating", which will retain subsequent inversions instead of clearing the image after each. This is enabled by default.  
 Additionally, you can choose the value of each rgb color subtracted from the base pixel rgb values to create the inversion. Try experimenting with different values for interesting results :D
 
 This is my first Flutter app so please let me know if there's anything I can improve!
