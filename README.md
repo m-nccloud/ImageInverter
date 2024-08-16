@@ -32,9 +32,9 @@ Screenshots and examples:
 ![image](https://github.com/user-attachments/assets/64fd7b63-5b74-4040-87d4-78059a7601f1)
 ![palms](https://github.com/user-attachments/assets/f635069c-12ea-4ba4-a07e-c59b41ae52fe)
 ![asdasd](https://github.com/user-attachments/assets/2e49f990-845c-4746-b254-c1b8dc5618df)
+![pagoda_inv](https://github.com/user-attachments/assets/933576ec-f4e3-4e51-b019-6f2934f7e7a1)
 ![eva_inverted6](https://github.com/user-attachments/assets/4cea60c5-14e6-4f54-adc0-d152a6555a56)
 ![cmatrix2_abstract_bg](https://github.com/user-attachments/assets/9c2d53eb-9f88-4f35-acce-9a772c60058e)
-![cmatrix_abstract_bg2](https://github.com/user-attachments/assets/ee0bec4d-34d8-4e20-bd14-e420eeb312b6)
 
 Neon Genesis Evangelion pictures sourced from: https://wallpaper-mania.com/wp-content/uploads/2018/09/High_resolution_wallpaper_background_ID_77702143806.jpg, https://64.media.tumblr.com/a37f188cb85d82bbeb633cafd71faffc/1ae97b1da8847271-74/s2048x3072/ad08b0f03c96cfa1f4490927cd808e52be9041c8.png
 
