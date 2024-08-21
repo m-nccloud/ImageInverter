@@ -92,6 +92,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _repaintFlag = false;
   bool _accumulate = true;
   bool _isLoading = false;
+  bool _imgNotYetBuilt = true;
+  bool _startedFullscreen = false;
   int _inversionShape = 0;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
@@ -148,11 +150,13 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   @override
   void initState() {
     super.initState();
-    SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    _displayWidth = GetSystemMetrics(
-        SM_CXSCREEN); // the actual pixel width of display monitor 1
-    _displayHeight = GetSystemMetrics(
-        SM_CYSCREEN); // the actual pixel height of display monitor 1
+    if (Platform.isWindows) {
+      SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+      _displayWidth = GetSystemMetrics(
+          SM_CXSCREEN); // the actual pixel width of display monitor 1
+      _displayHeight = GetSystemMetrics(
+          SM_CYSCREEN); // the actual pixel height of display monitor 1
+    } else if (Platform.isLinux) {}
     _screenThreshold = (_displayWidth * 0.7).floor();
   }
 
@@ -180,7 +184,32 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
     if (_prevAppWindowHeight == -1) _prevAppWindowHeight = appWindowHeight;
 
-    // app window fullscreened
+    // starting fullscreened
+    if (_imgNotYetBuilt) {
+      if (_appWindowWidth == _displayWidth) {
+        print("asdmad");
+        _startedFullscreen = true;
+      }
+      _imgNotYetBuilt = false;
+    }
+
+    //minimizing from initial fullscreen
+    if (_startedFullscreen && _appWindowWidth != _displayWidth) {
+      if (decodedImg.width > _appWindowWidth) {
+        setState(() {
+          _startedFullscreen = false;
+          _widthOnlyOverflow = true;
+          var ratio = //(prevImageWidgetSize!.width / imageWidgetSize!.width):
+              (imageWidgetSize!.width / prevImageWidgetSize!.width);
+          _xInImage *= ratio;
+          _yInImage *= ratio;
+          imgCoords[0] = _xInImage.round();
+          imgCoords[1] = _yInImage.round();
+        });
+      }
+    }
+
+    // fullscreened
     if (_widthOnlyOverflow &&
         imageWidgetSize != null &&
         imageWidgetSize!.width == decodedImg.width) {
@@ -302,6 +331,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           _imgMemory = Uint8List.view(pngBytes!.buffer);
           _rectHeight = 0;
           _imgWidgetPadding = 0;
+          _imgNotYetBuilt = true;
+          _startedFullscreen = false;
         });
         resetInversionCenter();
       }
