@@ -9,6 +9,7 @@ import 'package:image_inverter_gui_flutter/inversion_functions.dart';
 import 'package:win32/win32.dart';
 import 'enums.dart';
 import 'dart:async';
+import 'package:screen_retriever/screen_retriever.dart';
 
 void main() {
   runApp(const ImageInverter());
@@ -156,8 +157,22 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           SM_CXSCREEN); // the actual pixel width of display monitor 1
       _displayHeight = GetSystemMetrics(
           SM_CYSCREEN); // the actual pixel height of display monitor 1
-    } else if (Platform.isLinux) {}
     _screenThreshold = (_displayWidth * 0.7).floor();
+    } else if (Platform.isLinux) {
+        initDisplays();
+    }
+  }
+
+   initDisplays() async {
+       var display = await screenRetriever. getPrimaryDisplay();
+      setState(() {
+        _displayHeight = display.size.height.round();
+        _displayWidth = display.size.width.round();
+        _screenThreshold = (_displayWidth * 0.7).floor();
+        print("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+        print(_displayWidth);
+        print(_screenThreshold);
+      });
   }
 
   @override
