@@ -9,6 +9,7 @@ import 'package:image_inverter_gui_flutter/inversion_functions.dart';
 import 'package:win32/win32.dart';
 import 'enums.dart';
 import 'dart:async';
+import 'package:screen_retriever/screen_retriever.dart';
 
 void main() {
   runApp(const ImageInverter());
@@ -92,6 +93,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _repaintFlag = false;
   bool _accumulate = true;
   bool _isLoading = false;
+  bool _imgNotYetBuilt = true;
+  bool _startedFullscreen = false;
   int _inversionShape = 0;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
@@ -99,6 +102,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   int _displayWidth = 0;
   int _displayHeight = 0;
   int _screenThreshold = 0;
+  int _buildCount = 0;
   double _imgWidgetPadding = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
@@ -148,21 +152,37 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   @override
   void initState() {
     super.initState();
-    SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-    _displayWidth = GetSystemMetrics(
-        SM_CXSCREEN); // the actual pixel width of display monitor 1
-    _displayHeight = GetSystemMetrics(
-        SM_CYSCREEN); // the actual pixel height of display monitor 1
-    _screenThreshold = (_displayWidth * 0.7).floor();
+    if (Platform.isWindows) {
+      SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+      _displayWidth = GetSystemMetrics(
+          SM_CXSCREEN); // the actual pixel width of display monitor 1
+      _displayHeight = GetSystemMetrics(
+          SM_CYSCREEN); // the actual pixel height of display monitor 1
+      _screenThreshold = (_displayWidth * 0.7).floor();
+    } else if (Platform.isLinux) {
+      initDisplays();
+    }
+  }
+
+  initDisplays() async {
+    var display = await screenRetriever.getPrimaryDisplay();
+    setState(() {
+      _displayHeight = display.size.height.round();
+      _displayWidth = display.size.width.round();
+      _screenThreshold = (_displayWidth * 0.7).floor();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
+    // printVars();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
-          if (imageWidgetSize != null && imageWidgetSize!.width != 0) {
+          if (imageWidgetSize != null &&
+              imageWidgetSize!.width != 0 &&
+              getImgWidgetSizeVal!.width != 0) {
             prevImageWidgetSize = imageWidgetSize;
           }
           if (getImgWidgetSizeVal!.width != 0) {
@@ -180,10 +200,36 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     if (_prevAppWindowWidth == -1) _prevAppWindowWidth = _appWindowWidth;
     if (_prevAppWindowHeight == -1) _prevAppWindowHeight = appWindowHeight;
 
-    // app window fullscreened
+    // starting fullscreened
+    if (_imgNotYetBuilt) {
+      if (_appWindowWidth == _displayWidth) {
+        _startedFullscreen = true;
+      }
+      _imgNotYetBuilt = false;
+    }
+
+    //minimizing from initial fullscreen
+    if (_startedFullscreen && _appWindowWidth != _displayWidth) {
+      if (decodedImg.width > _appWindowWidth) {
+        setState(() {
+          _startedFullscreen = false;
+          _widthOnlyOverflow = true;
+          var ratio = imageWidgetSize!.width / _displayWidth;
+          _xInImage *= ratio;
+          _yInImage *= ratio;
+          imgCoords[0] = _xInImage.round();
+          imgCoords[1] = _yInImage.round();
+        });
+      }
+    }
+
+    // fullscreened
     if (_widthOnlyOverflow &&
         imageWidgetSize != null &&
+        _appWindowWidth == _displayWidth &&
+        imageWidgetSize != prevImageWidgetSize &&
         imageWidgetSize!.width == decodedImg.width) {
+      // {
       if (prevImageWidgetSize!.width > 0) {
         _widthOnlyOverflow = false;
         setState(() {
@@ -265,7 +311,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     _prevAppWindowWidth = _appWindowWidth;
     _prevAppWindowHeight = appWindowHeight;
-
+    // printVars();
     return Scaffold(
         body: Center(
             child: Column(
@@ -302,6 +348,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           _imgMemory = Uint8List.view(pngBytes!.buffer);
           _rectHeight = 0;
           _imgWidgetPadding = 0;
+          _imgNotYetBuilt = true;
+          _startedFullscreen = false;
         });
         resetInversionCenter();
       }
@@ -323,7 +371,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     setState(() {
       _isLoading = true;
     });
-
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
 
@@ -341,6 +388,16 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       _isLoading = false;
       _loadingText = "\t\tInverting image";
     });
+  }
+
+  void printVars() {
+    print("============");
+    print(imageWidgetSize);
+    print(prevImageWidgetSize);
+    print(decodedImg.width);
+    print(_displayWidth);
+    print(_appWindowWidth);
+    print("============");
   }
 
   void saveInvertedImage() async {
