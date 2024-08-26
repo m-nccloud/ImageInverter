@@ -170,22 +170,15 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       _displayHeight = display.size.height.round();
       _displayWidth = display.size.width.round();
       _screenThreshold = (_displayWidth * 0.7).floor();
-      print("!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      print(_displayWidth);
-      print(_screenThreshold);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    print(_buildCount++);
-    printVars();
+    // printVars();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
-      print(getImgWidgetSizeVal);
-      print(imageWidgetSize);
       if (imageWidgetSize != getImgWidgetSizeVal) {
-        print('GOGOGOOG');
         setState(() {
           if (imageWidgetSize != null &&
               imageWidgetSize!.width != 0 &&
@@ -210,7 +203,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     // starting fullscreened
     if (_imgNotYetBuilt) {
       if (_appWindowWidth == _displayWidth) {
-        print("-1");
         _startedFullscreen = true;
       }
       _imgNotYetBuilt = false;
@@ -219,7 +211,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     //minimizing from initial fullscreen
     if (_startedFullscreen && _appWindowWidth != _displayWidth) {
       if (decodedImg.width > _appWindowWidth) {
-        print("0");
         setState(() {
           _startedFullscreen = false;
           _widthOnlyOverflow = true;
@@ -240,7 +231,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         imageWidgetSize!.width == decodedImg.width) {
       // {
       if (prevImageWidgetSize!.width > 0) {
-        print('1');
         _widthOnlyOverflow = false;
         setState(() {
           _appFullScreened = true;
@@ -257,7 +247,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         appWindowHeight >= (_displayHeight - 30) &&
         decodedImg.height < appWindowHeight) {
       var paddingVal = (appWindowHeight - decodedImg.height) / 2;
-      print('2');
       setState(() {
         _imgWidgetPadding = (paddingVal - paddingVal / 2);
         _appFullScreenedWithPadding = true;
@@ -267,7 +256,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     // revert padding
     if (_appFullScreenedWithPadding &&
         appWindowHeight < (_displayHeight - 30)) {
-      print('3');
       setState(() {
         _imgWidgetPadding = 0;
         _appFullScreenedWithPadding = false;
@@ -278,7 +266,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     if (decodedImg.width > _displayWidth &&
         (_prevAppWindowWidth != _appWindowWidth ||
             _prevAppWindowHeight != appWindowHeight)) {
-      print('4');
       setState(() {
         _xInImage *= (_appWindowWidth / _prevAppWindowWidth);
         _yInImage *= (_appWindowWidth / _prevAppWindowWidth);
@@ -295,7 +282,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         prevImageWidgetSize?.width != decodedImg.width &&
         decodedImg.width <= _displayWidth &&
         decodedImg.width > _appWindowWidth) {
-      print('5');
       setState(() {
         _widthOnlyOverflow = true;
         if ((_prevAppWindowWidth != _appWindowWidth ||
@@ -313,7 +299,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     }
     if (_prevAppWindowHeight != appWindowHeight ||
         _prevAppWindowWidth != _appWindowWidth) {
-      print('6');
       setState(() {
         _rectHeight = _sliderCurr.floor() *
             (decodedImg.height / decodedImg.width) *
@@ -326,7 +311,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     _prevAppWindowWidth = _appWindowWidth;
     _prevAppWindowHeight = appWindowHeight;
-    printVars();
+    // printVars();
     return Scaffold(
         body: Center(
             child: Column(
