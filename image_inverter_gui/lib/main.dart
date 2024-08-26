@@ -102,7 +102,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   int _displayWidth = 0;
   int _displayHeight = 0;
   int _screenThreshold = 0;
-  int _buildCount = 0;
   double _imgWidgetPadding = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
