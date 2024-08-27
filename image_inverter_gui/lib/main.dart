@@ -228,7 +228,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         _appWindowWidth == _displayWidth &&
         imageWidgetSize != prevImageWidgetSize &&
         imageWidgetSize!.width == decodedImg.width) {
-      // {
       if (prevImageWidgetSize!.width > 0) {
         _widthOnlyOverflow = false;
         setState(() {
@@ -349,6 +348,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           _imgWidgetPadding = 0;
           _imgNotYetBuilt = true;
           _startedFullscreen = false;
+          _widthOnlyOverflow = false;
+          imageWidgetSize = null;
+          prevImageWidgetSize = null;
         });
         resetInversionCenter();
       }
