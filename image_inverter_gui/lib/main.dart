@@ -175,7 +175,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   @override
   Widget build(BuildContext context) {
     // printVars();
-    print(MediaQuery.of(context).devicePixelRatio);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
       if (imageWidgetSize != getImgWidgetSizeVal) {
