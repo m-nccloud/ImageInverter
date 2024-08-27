@@ -21,7 +21,7 @@ Current WIP:
 To run:  
 Windows:  
 -If compiling from source: make sure you have flutter installed on your machine, clone the repo and from the `image_inverter_gui` folder level run `flutter run` and select Windows or Edge if applicable. If you have issues, running `flutter pub get` should resolve them, if that doesn't work feel free to open a bug report and I'll do my best to investigate  
--Otherwise, just download the .exe file from the 'Releases' section in the repo  
+-Otherwise, just download the .zip file from the 'Releases' section in the repo, extract it and run the .exe inside from the extracted folder **(note: it needs to be in the same folder as the /data folder and .dlls to run. I may look into the possibility of bundling these in the future but for now this is needed)**
 
 -- MacOS and Linux builds and instructions coming soon --
 
