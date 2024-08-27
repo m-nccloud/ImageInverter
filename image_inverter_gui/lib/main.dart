@@ -175,6 +175,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   @override
   Widget build(BuildContext context) {
     // printVars();
+    print(MediaQuery.of(context).devicePixelRatio);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
       if (imageWidgetSize != getImgWidgetSizeVal) {
@@ -351,6 +352,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           _widthOnlyOverflow = false;
           imageWidgetSize = null;
           prevImageWidgetSize = null;
+          _appFullScreened = false;
         });
         resetInversionCenter();
       }
