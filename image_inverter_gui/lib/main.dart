@@ -95,6 +95,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _isLoading = false;
   bool _imgNotYetBuilt = true;
   bool _startedFullscreen = false;
+  bool _initialImageLoad = false;
   int _inversionShape = 0;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
@@ -102,6 +103,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   int _displayWidth = 0;
   int _displayHeight = 0;
   int _screenThreshold = 0;
+  int _imageBuildCount = 0;
   double _imgWidgetPadding = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
@@ -179,7 +181,11 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
-          if (imageWidgetSize != null &&
+          if(_initialImageLoad && getImgWidgetSizeVal!.width > 0) {
+            prevImageWidgetSize = getImgWidgetSizeVal;
+            _initialImageLoad = false;
+          }
+          else if (imageWidgetSize != null &&
               imageWidgetSize!.width != 0 &&
               getImgWidgetSizeVal!.width != 0) {
             prevImageWidgetSize = imageWidgetSize;
@@ -349,9 +355,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           _imgNotYetBuilt = true;
           _startedFullscreen = false;
           _widthOnlyOverflow = false;
-          imageWidgetSize = null;
-          prevImageWidgetSize = null;
+          if(_imageBuildCount > 0) _initialImageLoad = true;
           _appFullScreened = false;
+          _imageBuildCount++;
         });
         resetInversionCenter();
       }
