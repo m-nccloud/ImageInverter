@@ -96,6 +96,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _imgNotYetBuilt = true;
   bool _startedFullscreen = false;
   bool _initialImageLoad = false;
+  bool _windows = true;
   int _inversionShape = 0;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
@@ -161,6 +162,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           SM_CYSCREEN); // the actual pixel height of display monitor 1
       _screenThreshold = (_displayWidth * 0.7).floor();
     } else if (Platform.isLinux) {
+      _windows = false;
       initDisplays();
     }
   }
@@ -248,7 +250,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     // set padding if applicable
     if (imageWidgetSize != null &&
-        appWindowHeight >= (_displayHeight - 30) &&
+        appWindowHeight >= (_displayHeight - (_windows ? 30 : 80)) &&
         decodedImg.height < appWindowHeight) {
       var paddingVal = (appWindowHeight - decodedImg.height) / 2;
       setState(() {
@@ -259,7 +261,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     // revert padding
     if (_appFullScreenedWithPadding &&
-        appWindowHeight < (_displayHeight - 30)) {
+        appWindowHeight < (_displayHeight - (_windows ? 30 : 80))) {
       setState(() {
         _imgWidgetPadding = 0;
         _appFullScreenedWithPadding = false;
