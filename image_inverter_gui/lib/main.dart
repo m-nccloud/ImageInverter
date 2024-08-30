@@ -96,7 +96,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _imgNotYetBuilt = true;
   bool _startedFullscreen = false;
   bool _initialImageLoad = false;
-  bool _windows = true;
   int _inversionShape = 0;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
@@ -162,7 +161,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           SM_CYSCREEN); // the actual pixel height of display monitor 1
       _screenThreshold = (_displayWidth * 0.7).floor();
     } else if (Platform.isLinux) {
-      _windows = false;
       initDisplays();
     }
   }
@@ -183,11 +181,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
       if (imageWidgetSize != getImgWidgetSizeVal) {
         setState(() {
-          if(_initialImageLoad && getImgWidgetSizeVal!.width > 0) {
+          if (_initialImageLoad && getImgWidgetSizeVal!.width > 0) {
             prevImageWidgetSize = getImgWidgetSizeVal;
             _initialImageLoad = false;
-          }
-          else if (imageWidgetSize != null &&
+          } else if (imageWidgetSize != null &&
               imageWidgetSize!.width != 0 &&
               getImgWidgetSizeVal!.width != 0) {
             prevImageWidgetSize = imageWidgetSize;
@@ -250,7 +247,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     // set padding if applicable
     if (imageWidgetSize != null &&
-        appWindowHeight >= (_displayHeight - (_windows ? 30 : 80)) &&
+        (appWindowHeight * MediaQuery.of(context).devicePixelRatio).round() >=
+            (_displayHeight - 80) &&
         decodedImg.height < appWindowHeight) {
       var paddingVal = (appWindowHeight - decodedImg.height) / 2;
       setState(() {
@@ -261,7 +259,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     // revert padding
     if (_appFullScreenedWithPadding &&
-        appWindowHeight < (_displayHeight - (_windows ? 30 : 80))) {
+        (appWindowHeight * MediaQuery.of(context).devicePixelRatio).round() <
+            (_displayHeight - 80)) {
       setState(() {
         _imgWidgetPadding = 0;
         _appFullScreenedWithPadding = false;
@@ -357,7 +356,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           _imgNotYetBuilt = true;
           _startedFullscreen = false;
           _widthOnlyOverflow = false;
-          if(_imageBuildCount > 0) _initialImageLoad = true;
+          if (_imageBuildCount > 0) _initialImageLoad = true;
           _appFullScreened = false;
           _imageBuildCount++;
         });
