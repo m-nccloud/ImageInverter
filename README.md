@@ -16,7 +16,8 @@ This is my first Flutter app so please let me know if there's anything I can imp
 Current WIP:  
 -general code refactoring  
 -additional shapes  
--undo and redo button  
+-undo and redo button 
+-optional secondary non-inversion area
 
 To run:  
 Windows:  
