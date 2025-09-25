@@ -38,6 +38,8 @@ Screenshots and examples:
 ![eva_inverted6](https://github.com/user-attachments/assets/4cea60c5-14e6-4f54-adc0-d152a6555a56)
 ![cmatrix2_abstract_bg](https://github.com/user-attachments/assets/9c2d53eb-9f88-4f35-acce-9a772c60058e)
 
+BP Oil Spill photo by Daniel Beltrá
+
 Neon Genesis Evangelion pictures sourced from: https://wallpaper-mania.com/wp-content/uploads/2018/09/High_resolution_wallpaper_background_ID_77702143806.jpg, https://64.media.tumblr.com/a37f188cb85d82bbeb633cafd71faffc/1ae97b1da8847271-74/s2048x3072/ad08b0f03c96cfa1f4490927cd808e52be9041c8.png
 
 Shaggy picture by Guilherme Freitas: https://cdna.artstation.com/p/assets/images/images/015/693/500/4k/guilherme-freitas-shaggyjpg.jpg?1549288363
