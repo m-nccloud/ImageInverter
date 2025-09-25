@@ -31,7 +31,7 @@ Feel free to check out the `image_inverter_examples` folder for inspiration if y
 Screenshots and examples:
 ---------------------------------------------------------------------------------------------------------------
 ![image](https://github.com/user-attachments/assets/64fd7b63-5b74-4040-87d4-78059a7601f1)
-<img width="2048" height="1576" alt="oil" src="https://github.com/user-attachments/assets/efca07ee-c3bb-4e57-989f-923c97414c09" />
+<img width="2048" height="1576" alt="candy_oil" src="https://github.com/user-attachments/assets/d5be0602-c22d-48a7-ad02-55d74637c6bd" />
 ![palms](https://github.com/user-attachments/assets/f635069c-12ea-4ba4-a07e-c59b41ae52fe)
 ![asdasd](https://github.com/user-attachments/assets/2e49f990-845c-4746-b254-c1b8dc5618df)
 ![pagoda_inv](https://github.com/user-attachments/assets/933576ec-f4e3-4e51-b019-6f2934f7e7a1)
