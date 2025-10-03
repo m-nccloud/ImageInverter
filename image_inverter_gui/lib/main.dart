@@ -10,6 +10,7 @@ import 'package:win32/win32.dart';
 import 'enums.dart';
 import 'dart:async';
 import 'package:screen_retriever/screen_retriever.dart';
+import 'package:dropdown_button2/dropdown_button2.dart';
 
 void main() {
   runApp(const ImageInverter());
@@ -96,7 +97,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _imgNotYetBuilt = true;
   bool _startedFullscreen = false;
   bool _initialImageLoad = false;
-  int _inversionShape = 0;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
   int _prevAppWindowHeight = -1;
@@ -518,10 +518,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     }
   }
 
-  void setInversionShape(int selection) {
-    _inversionShape = selection;
-  }
-
   List<Widget> pixelSubtractSliders() {
     return [
       Column(
@@ -596,37 +592,28 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           Visibility(
               visible: (_imgFilePath.isNotEmpty && !_imageExceptionOccurred),
               child: Row(children: [
-                Text("\tInversion Shape: \tRect"),
-                Radio(
-                    value: 0,
-                    groupValue: _inversionShape,
+                Text(" Shape: "),
+                DropdownButton2(
+                    hint: Text("Inversion Shape"),
+                    value: _shape,
+                    items: InversionShape.values
+                        .map((shape) => DropdownMenuItem<InversionShape>(
+                              value: shape,
+                              child: Text(shape.name),
+                            ))
+                        .toList(),
                     onChanged: (value) {
                       setState(() {
-                        _inversionShape = value!;
-                        _inversionLabel = "Inversion Width";
-                        _shape = InversionShape.rect;
-                      });
-                    }),
-                Text("\tBox"),
-                Radio(
-                    value: 1,
-                    groupValue: _inversionShape,
-                    onChanged: (value) {
-                      setState(() {
-                        _inversionShape = value!;
-                        _inversionLabel = "Inversion Width";
-                        _shape = InversionShape.box;
-                      });
-                    }),
-                Text("\tCircle"),
-                Radio(
-                    value: 2,
-                    groupValue: _inversionShape,
-                    onChanged: (value) {
-                      setState(() {
-                        _inversionShape = value!;
-                        _inversionLabel = "Inversion Radius";
-                        _shape = InversionShape.circle;
+                        if (value == InversionShape.rect) {
+                          _shape = InversionShape.rect;
+                          _inversionLabel = "Inversion Width";
+                        } else if (value == InversionShape.box) {
+                          _shape = InversionShape.box;
+                          _inversionLabel = "Inversion Width";
+                        } else {
+                          _shape = InversionShape.circle;
+                          _inversionLabel = "Inversion Diameter";
+                        }
                       });
                     }),
                 Text("\tAccumulate"),
