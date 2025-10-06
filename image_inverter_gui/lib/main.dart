@@ -594,8 +594,11 @@ class _ImgInverterState extends State<ImgInverterWidget> {
               child: Row(children: [
                 Text(" Shape: "),
                 DropdownButton2(
+                    isExpanded: true,
                     hint: Text("Inversion Shape"),
                     value: _shape,
+                    buttonStyleData: ButtonStyleData(width: 100),
+                    dropdownStyleData: DropdownStyleData(width: 100),
                     items: InversionShape.values
                         .map((shape) => DropdownMenuItem<InversionShape>(
                               value: shape,
