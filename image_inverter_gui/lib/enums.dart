@@ -1,1 +1,1 @@
-enum InversionShape { rect, box, circle }
+enum InversionShape { rect, box, circle, triangle }

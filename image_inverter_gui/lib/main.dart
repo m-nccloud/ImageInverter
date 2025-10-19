@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -44,6 +45,20 @@ class OutlinePainter extends CustomPainter {
               width: tempMagnitude,
               height: rectHeight),
           myPaint);
+    } else if (shape == InversionShape.triangle) {
+      final height = (math.sqrt(3) / 2) * tempMagnitude;
+      final point1 =
+          Offset(centerX.toDouble(), centerY.toDouble() - (2 * height) / 3);
+      final point2 = Offset(centerX.toDouble() - tempMagnitude / 2,
+          centerY.toDouble() + height / 3);
+      final point3 = Offset(centerX.toDouble() + tempMagnitude / 2,
+          centerY.toDouble() + height / 3);
+      final path = Path()
+        ..moveTo(point1.dx, point1.dy)
+        ..lineTo(point2.dx, point2.dy)
+        ..lineTo(point3.dx, point3.dy)
+        ..close();
+      canvas.drawPath(path, myPaint);
     } else {
       canvas.drawRect(
           Rect.fromCenter(
@@ -658,6 +673,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                         } else if (value == InversionShape.box) {
                           _shape = InversionShape.box;
                           _inversionLabel = "Inversion Width";
+                        } else if (value == InversionShape.triangle) {
+                          _shape = InversionShape.triangle;
+                          _inversionLabel = "Inversion Base";
                         } else {
                           _shape = InversionShape.circle;
                           _inversionLabel = "Inversion Diameter";

@@ -78,6 +78,18 @@ class InversionHelper {
             }
           }
         }
+      case InversionShape.triangle:
+        {
+          for (final pixel in inputImage) {
+            if (math.pow(pixel.x - centerX, 2) +
+                    math.pow(pixel.y - centerY, 2) <=
+                math.pow(magnitude / 2.floor(), 2)) {
+              pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
+              pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
+              pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+            }
+          }
+        }
     }
   }
 }
@@ -142,6 +154,25 @@ double invertImage(img.Image inputImage, int magnitude, List<int> coords,
         for (final pixel in inputImage) {
           if (math.pow(pixel.x - centerX, 2) + math.pow(pixel.y - centerY, 2) <=
               math.pow((magnitude / 2).floor(), 2)) {
+            pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
+            pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
+            pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+          }
+        }
+      }
+    case InversionShape.triangle:
+      {
+        final height = (math.sqrt(3) / 2) * magnitude;
+        for (final pixel in inputImage) {
+          if (pixel.y >=
+                  -math.sqrt(3) * (pixel.x - centerX) +
+                      centerY -
+                      2 * height / 3 &&
+              pixel.y >=
+                  math.sqrt(3) * (pixel.x - centerX) +
+                      centerY -
+                      2 * height / 3 &&
+              pixel.y <= centerY + height / 3) {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
             pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
