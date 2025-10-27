@@ -95,7 +95,8 @@ class InversionHelper {
 }
 
 double invertImage(img.Image inputImage, int magnitude, List<int> coords,
-    List<int> pixelSubtractValue, InversionShape shape) {
+    List<int> pixelSubtractValue, InversionShape shape,
+    {double theta = 0}) {
   var dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
   var halfMag = magnitude / 2;
   var halfScaledH = dumbRatio * halfMag;
@@ -165,9 +166,8 @@ double invertImage(img.Image inputImage, int magnitude, List<int> coords,
         final height = (math.sqrt(3) / 2) * magnitude;
         for (final pixel in inputImage) {
           if (pixel.y >=
-                  -math.sqrt(3) * (pixel.x - centerX) +
-                      centerY -
-                      2 * height / 3 &&
+                  -math.sqrt(3) * (pixel.x - centerX) * math.cos(theta) +
+                      (centerY - 2 * height / 3) * din &&
               pixel.y >=
                   math.sqrt(3) * (pixel.x - centerX) +
                       centerY -

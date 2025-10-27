@@ -24,10 +24,22 @@ class OutlinePainter extends CustomPainter {
   var rectHeight = 0.0;
   var shape = InversionShape.rect;
   var scaleFactor = 1.0;
+  double _rotThetaRads = 0;
   bool repaintFlag;
 
   OutlinePainter(this.centerX, this.centerY, this.magnitude, this.rectHeight,
-      this.shape, this.scaleFactor, this.repaintFlag);
+      this.shape, this.scaleFactor, this.repaintFlag, this._rotThetaRads);
+
+  Offset rotatePoint(Offset point, Offset center, double theta) {
+    final dx = point.dx - center.dx;
+    final dy = point.dy - center.dy;
+    final cosT = math.cos(theta);
+    final sinT = math.sin(theta);
+    return Offset(
+      center.dx + dx * cosT - dy * sinT,
+      center.dy + dx * sinT + dy * cosT,
+    );
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -53,10 +65,18 @@ class OutlinePainter extends CustomPainter {
           centerY.toDouble() + height / 3);
       final point3 = Offset(centerX.toDouble() + tempMagnitude / 2,
           centerY.toDouble() + height / 3);
+
+      final rotPoint1 = rotatePoint(point1,
+          Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+      final rotPoint2 = rotatePoint(point2,
+          Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+      final rotPoint3 = rotatePoint(point3,
+          Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+
       final path = Path()
-        ..moveTo(point1.dx, point1.dy)
-        ..lineTo(point2.dx, point2.dy)
-        ..lineTo(point3.dx, point3.dy)
+        ..moveTo(rotPoint1.dx, rotPoint1.dy)
+        ..lineTo(rotPoint2.dx, rotPoint2.dy)
+        ..lineTo(rotPoint3.dx, rotPoint3.dy)
         ..close();
       canvas.drawPath(path, myPaint);
     } else {
@@ -73,7 +93,8 @@ class OutlinePainter extends CustomPainter {
   bool shouldRepaint(covariant OutlinePainter oldDelegate) {
     return oldDelegate.rectHeight != rectHeight ||
         oldDelegate.shape != shape ||
-        oldDelegate.repaintFlag != repaintFlag;
+        oldDelegate.repaintFlag != repaintFlag ||
+        oldDelegate._rotThetaRads != _rotThetaRads;
   }
 }
 
@@ -119,6 +140,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   int _displayHeight = 0;
   int _screenThreshold = 0;
   int _imageBuildCount = 0;
+  double _rotSliderDegs = 0;
+  double _rotSliderMax = 360;
+  double _rotThetaRads = 0;
   double _imgWidgetPadding = 0;
   double _sliderCurr = 0;
   double _sliderMax = 0;
@@ -570,7 +594,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                 (decodedImg.width > _appWindowWidth
                     ? _appWindowWidth / decodedImg.width
                     : 1),
-                _repaintFlag),
+                _repaintFlag,
+                _rotThetaRads),
             child: Image.memory(_imgMemory)),
       ]);
     } else {
@@ -624,6 +649,20 @@ class _ImgInverterState extends State<ImgInverterWidget> {
               setState(() {
                 _pixelSliderCurr[2] = val;
                 _pixelSliderCurrInt[2] = val.ceil();
+              });
+            })
+      ]),
+      Column(children: [
+        Transform.translate(
+            offset: Offset(0.0, 12.5),
+            child: Text("Rotation: ${_rotSliderDegs.ceil()}")),
+        Slider(
+            value: _rotSliderDegs,
+            max: _rotSliderMax,
+            onChanged: (val) {
+              setState(() {
+                _rotSliderDegs = val;
+                _rotThetaRads = (_rotSliderDegs * (math.pi / 180));
               });
             })
       ])
