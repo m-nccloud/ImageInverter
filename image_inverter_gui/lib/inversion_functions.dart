@@ -166,8 +166,9 @@ double invertImage(img.Image inputImage, int magnitude, List<int> coords,
         final height = (math.sqrt(3) / 2) * magnitude;
         for (final pixel in inputImage) {
           if (pixel.y >=
-                  -math.sqrt(3) * (pixel.x - centerX) * math.cos(theta) +
-                      (centerY - 2 * height / 3) * din &&
+                  -math.sqrt(3) * (pixel.x - centerX) +
+                      centerY -
+                      2 * height / 3 &&
               pixel.y >=
                   math.sqrt(3) * (pixel.x - centerX) +
                       centerY -
