@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'enums.dart';
 
@@ -72,19 +73,25 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
       }
     case InversionShape.triangle:
       {
-        final edge1 = trianglePoints![1] - trianglePoints[0];
-        final edge2 = trianglePoints[2] - trianglePoints[1];
-        final edge3 = trianglePoints[0] - trianglePoints[2];
+        final edgeVectors = [
+          trianglePoints![1] - trianglePoints[0],
+          trianglePoints[2] - trianglePoints[1],
+          trianglePoints[0] - trianglePoints[2]
+        ];
+        final edgeNormals = [
+          Offset(-edgeVectors[0].dy, edgeVectors[0].dx),
+          Offset(-edgeVectors[1].dy, edgeVectors[1].dx),
+          Offset(-edgeVectors[2].dy, edgeVectors[2].dx)
+        ];
         for (final pixel in inputImage) {
+          bool paintPixel = true;
           final point = ui.Offset(pixel.x.toDouble(), pixel.y.toDouble());
-          final dP1 = (point.dx - trianglePoints[0].dx) * edge1.dy -
-              (point.dy - trianglePoints[0].dy) * edge1.dx;
-          final dP2 = (point.dx - trianglePoints[1].dx) * edge2.dy -
-              (point.dy - trianglePoints[1].dy) * edge2.dx;
-          final dP3 = (point.dx - trianglePoints[2].dx) * edge3.dy -
-              (point.dy - trianglePoints[2].dy) * edge3.dx;
-          if ((dP1 >= 0 && dP2 >= 0 && dP3 >= 0) ||
-              (dP1 <= 0 && dP2 <= 0 && dP3 <= 0)) {
+          for (int i = 0; i < 3; i++) {
+            if ((edgeNormals[i].dx * (point.dx - trianglePoints[i].dx) +
+                    edgeNormals[i].dy * (point.dy - trianglePoints[i].dy)) >
+                0) paintPixel = false;
+          }
+          if (paintPixel) {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
             pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
