@@ -24,22 +24,11 @@ class OutlinePainter extends CustomPainter {
   var rectHeight = 0.0;
   var shape = InversionShape.rect;
   var scaleFactor = 1.0;
-  double _rotThetaRads = 0;
+  List<Offset> trianglePoints;
   bool repaintFlag;
 
   OutlinePainter(this.centerX, this.centerY, this.magnitude, this.rectHeight,
-      this.shape, this.scaleFactor, this.repaintFlag, this._rotThetaRads);
-
-  Offset rotatePoint(Offset point, Offset center, double theta) {
-    final dx = point.dx - center.dx;
-    final dy = point.dy - center.dy;
-    final cosT = math.cos(theta);
-    final sinT = math.sin(theta);
-    return Offset(
-      center.dx + dx * cosT - dy * sinT,
-      center.dy + dx * sinT + dy * cosT,
-    );
-  }
+      this.shape, this.scaleFactor, this.repaintFlag, this.trianglePoints);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -58,25 +47,10 @@ class OutlinePainter extends CustomPainter {
               height: rectHeight),
           myPaint);
     } else if (shape == InversionShape.triangle) {
-      final height = (math.sqrt(3) / 2) * tempMagnitude;
-      final point1 =
-          Offset(centerX.toDouble(), centerY.toDouble() - (2 * height) / 3);
-      final point2 = Offset(centerX.toDouble() - tempMagnitude / 2,
-          centerY.toDouble() + height / 3);
-      final point3 = Offset(centerX.toDouble() + tempMagnitude / 2,
-          centerY.toDouble() + height / 3);
-
-      final rotPoint1 = rotatePoint(point1,
-          Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
-      final rotPoint2 = rotatePoint(point2,
-          Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
-      final rotPoint3 = rotatePoint(point3,
-          Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
-
       final path = Path()
-        ..moveTo(rotPoint1.dx, rotPoint1.dy)
-        ..lineTo(rotPoint2.dx, rotPoint2.dy)
-        ..lineTo(rotPoint3.dx, rotPoint3.dy)
+        ..moveTo(trianglePoints[0].dx, trianglePoints[0].dy)
+        ..lineTo(trianglePoints[1].dx, trianglePoints[1].dy)
+        ..lineTo(trianglePoints[2].dx, trianglePoints[2].dy)
         ..close();
       canvas.drawPath(path, myPaint);
     } else {
@@ -94,7 +68,7 @@ class OutlinePainter extends CustomPainter {
     return oldDelegate.rectHeight != rectHeight ||
         oldDelegate.shape != shape ||
         oldDelegate.repaintFlag != repaintFlag ||
-        oldDelegate._rotThetaRads != _rotThetaRads;
+        oldDelegate.trianglePoints != trianglePoints;
   }
 }
 
@@ -169,12 +143,42 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   final _keyImage = GlobalKey();
   Size? prevImageWidgetSize;
   Size? imageWidgetSize;
+  List<Offset> rotatedTrianglePoints = [
+    Offset(0, 0),
+    Offset(0, 0),
+    Offset(0, 0)
+  ];
 
   Size? getImageWidgetSize(BuildContext? context) {
     if (context == null) return null;
     final box = context.findRenderObject() as RenderBox;
     return box.size;
   }
+
+  Offset rotatePoint(Offset point, Offset center, double theta) {
+    final dx = point.dx - center.dx;
+    final dy = point.dy - center.dy;
+    final cosT = math.cos(theta);
+    final sinT = math.sin(theta);
+    return Offset(
+      center.dx + dx * cosT - dy * sinT,
+      center.dy + dx * sinT + dy * cosT,
+    );
+  }
+
+  final height = (math.sqrt(3) / 2) * tempMagnitude;
+  final point1 = Offset(x.toDouble(), centerY.toDouble() - (2 * height) / 3);
+  final point2 = Offset(
+      centerX.toDouble() - tempMagnitude / 2, centerY.toDouble() + height / 3);
+  final point3 = Offset(
+      centerX.toDouble() + tempMagnitude / 2, centerY.toDouble() + height / 3);
+
+  final rotPoint1 = rotatePoint(
+      point1, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+  final rotPoint2 = rotatePoint(
+      point2, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+  final rotPoint3 = rotatePoint(
+      point3, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
 
   void _updateLocation(PointerEvent details) {
     setState(() {
