@@ -449,8 +449,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     decodedImgPrev = decodedImg.clone();
 
-    invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
-        _shape);
+    invertImage(
+        inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt, _shape,
+        trianglePoints: rotatedTrianglePoints);
     ui.Image uiImg = await convertImageToFlutterUi(inputImage);
     decodedImgNext = inputImage.clone();
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);

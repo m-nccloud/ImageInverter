@@ -1,10 +1,11 @@
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 import 'package:image/image.dart' as img;
 import 'enums.dart';
 
-double invertImage(img.Image inputImage, int magnitude, List<int> coords,
+invertImage(img.Image inputImage, int magnitude, List<int> coords,
     List<int> pixelSubtractValue, InversionShape shape,
-    {double theta = 0}) {
+    {List<ui.Offset>? trianglePoints}) {
   var dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
   var halfMag = magnitude / 2;
   var halfScaledH = dumbRatio * halfMag;
@@ -71,17 +72,19 @@ double invertImage(img.Image inputImage, int magnitude, List<int> coords,
       }
     case InversionShape.triangle:
       {
-        final height = (math.sqrt(3) / 2) * magnitude;
+        final edge1 = trianglePoints![1] - trianglePoints[0];
+        final edge2 = trianglePoints[2] - trianglePoints[1];
+        final edge3 = trianglePoints[0] - trianglePoints[2];
         for (final pixel in inputImage) {
-          if (pixel.y >=
-                  -math.sqrt(3) * (pixel.x - centerX) +
-                      centerY -
-                      2 * height / 3 &&
-              pixel.y >=
-                  math.sqrt(3) * (pixel.x - centerX) +
-                      centerY -
-                      2 * height / 3 &&
-              pixel.y <= centerY + height / 3) {
+          final p = ui.Offset(pixel.x.toDouble(), pixel.y.toDouble());
+          final c1 = (p.dx - trianglePoints[0].dx) * edge1.dy -
+              (p.dy - trianglePoints[0].dy) * edge1.dx;
+          final c2 = (p.dx - trianglePoints[1].dx) * edge2.dy -
+              (p.dy - trianglePoints[1].dy) * edge2.dx;
+          final c3 = (p.dx - trianglePoints[2].dx) * edge3.dy -
+              (p.dy - trianglePoints[2].dy) * edge3.dx;
+          if ((c1 >= 0 && c2 >= 0 && c3 >= 0) ||
+              (c1 <= 0 && c2 <= 0 && c3 <= 0)) {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
             pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
@@ -89,6 +92,4 @@ double invertImage(img.Image inputImage, int magnitude, List<int> coords,
         }
       }
   }
-
-  return halfScaledH * 2;
 }
