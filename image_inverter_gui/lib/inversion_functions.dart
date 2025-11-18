@@ -76,15 +76,15 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
         final edge2 = trianglePoints[2] - trianglePoints[1];
         final edge3 = trianglePoints[0] - trianglePoints[2];
         for (final pixel in inputImage) {
-          final p = ui.Offset(pixel.x.toDouble(), pixel.y.toDouble());
-          final c1 = (p.dx - trianglePoints[0].dx) * edge1.dy -
-              (p.dy - trianglePoints[0].dy) * edge1.dx;
-          final c2 = (p.dx - trianglePoints[1].dx) * edge2.dy -
-              (p.dy - trianglePoints[1].dy) * edge2.dx;
-          final c3 = (p.dx - trianglePoints[2].dx) * edge3.dy -
-              (p.dy - trianglePoints[2].dy) * edge3.dx;
-          if ((c1 >= 0 && c2 >= 0 && c3 >= 0) ||
-              (c1 <= 0 && c2 <= 0 && c3 <= 0)) {
+          final point = ui.Offset(pixel.x.toDouble(), pixel.y.toDouble());
+          final dP1 = (point.dx - trianglePoints[0].dx) * edge1.dy -
+              (point.dy - trianglePoints[0].dy) * edge1.dx;
+          final dP2 = (point.dx - trianglePoints[1].dx) * edge2.dy -
+              (point.dy - trianglePoints[1].dy) * edge2.dx;
+          final dP3 = (point.dx - trianglePoints[2].dx) * edge3.dy -
+              (point.dy - trianglePoints[2].dy) * edge3.dx;
+          if ((dP1 >= 0 && dP2 >= 0 && dP3 >= 0) ||
+              (dP1 <= 0 && dP2 <= 0 && dP3 <= 0)) {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
             pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
