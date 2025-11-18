@@ -166,19 +166,32 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     );
   }
 
-  final height = (math.sqrt(3) / 2) * tempMagnitude;
-  final point1 = Offset(x.toDouble(), centerY.toDouble() - (2 * height) / 3);
-  final point2 = Offset(
-      centerX.toDouble() - tempMagnitude / 2, centerY.toDouble() + height / 3);
-  final point3 = Offset(
-      centerX.toDouble() + tempMagnitude / 2, centerY.toDouble() + height / 3);
+  void updateTrianglePoints() {
+    final tempMagnitude = _sliderCurr *
+        (decodedImg.width > _appWindowWidth
+            ? _appWindowWidth / decodedImg.width
+            : 1);
+    final centerX = _xInImage.floor();
+    final centerY = _yInImage.floor();
+    final height = (math.sqrt(3) / 2) * tempMagnitude;
+    final point1 =
+        Offset(centerX.toDouble(), centerY.toDouble() - (2 * height) / 3);
+    final point2 = Offset(centerX.toDouble() - tempMagnitude / 2,
+        centerY.toDouble() + height / 3);
+    final point3 = Offset(centerX.toDouble() + tempMagnitude / 2,
+        centerY.toDouble() + height / 3);
 
-  final rotPoint1 = rotatePoint(
-      point1, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
-  final rotPoint2 = rotatePoint(
-      point2, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
-  final rotPoint3 = rotatePoint(
-      point3, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+    final rotPoint1 = rotatePoint(
+        point1, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+    final rotPoint2 = rotatePoint(
+        point2, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+    final rotPoint3 = rotatePoint(
+        point3, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+
+    setState(() {
+      rotatedTrianglePoints = [rotPoint1, rotPoint2, rotPoint3];
+    });
+  }
 
   void _updateLocation(PointerEvent details) {
     setState(() {
@@ -195,6 +208,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
     });
+    updateTrianglePoints();
   }
 
   @override
@@ -529,6 +543,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       imgCoords[0] = _xInImage.floor();
       imgCoords[1] = _yInImage.floor();
     });
+    updateTrianglePoints();
   }
 
   void getCoords() {
@@ -599,7 +614,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                     ? _appWindowWidth / decodedImg.width
                     : 1),
                 _repaintFlag,
-                _rotThetaRads),
+                rotatedTrianglePoints),
             child: Image.memory(_imgMemory)),
       ]);
     } else {
@@ -660,15 +675,22 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         Transform.translate(
             offset: Offset(0.0, 12.5),
             child: Text("Rotation: ${_rotSliderDegs.ceil()}")),
-        Slider(
-            value: _rotSliderDegs,
-            max: _rotSliderMax,
-            onChanged: (val) {
-              setState(() {
-                _rotSliderDegs = val;
-                _rotThetaRads = (_rotSliderDegs * (math.pi / 180));
-              });
-            })
+        Row(
+          children: [
+            Slider(
+                value: _rotSliderDegs,
+                max: _rotSliderMax,
+                onChanged: (val) {
+                  setState(() {
+                    _rotSliderDegs = val;
+                    _rotThetaRads = (_rotSliderDegs * (math.pi / 180));
+                    _repaintFlag = !_repaintFlag;
+                  });
+                  updateTrianglePoints();
+                }),
+            Text(rotatedTrianglePoints.toString()),
+          ],
+        )
       ])
     ];
   }
@@ -781,6 +803,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                       ? _appWindowWidth / decodedImg.width
                       : 1);
             });
+            updateTrianglePoints();
           }),
       Text('$_inversionLabel: ${_sliderCurr.floor()}'),
       Row(children: [
