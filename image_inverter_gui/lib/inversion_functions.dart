@@ -19,21 +19,16 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
     case InversionShape.rect:
       {
         if (!rotated) {
-          // final startX = centerX - halfMag.floor();
-          // final startY = centerY - halfScaledH.floor();
-          // final clampedXVal = startX > 0 ? startX : 0;
-          // final clampedYVal = startY > 0 ? startX : 0;
-          final range = inputImage.getRange(
-              centerX - halfMag.floor(),
-              centerY - halfScaledH.floor(),
-              halfMag.floor() * 2,
-              halfScaledH.floor() * 2);
+          final clampedStartX = math.max(centerX - halfMag.floor(), 0);
+          final clampedStartY = math.max(centerY - halfScaledH.floor(), 0);
+          final clampedEndX =
+              math.min(centerX + halfMag.floor(), inputImage.width - 1);
+          final clampedEndY =
+              math.min(centerY + halfScaledH.floor(), inputImage.height - 1);
+          final range = inputImage.getRange(clampedStartX, clampedStartY,
+              clampedEndX - clampedStartX + 1, clampedEndY - clampedStartY + 1);
           while (range.moveNext()) {
             final pixel = range.current;
-            if (pixel.x > inputImage.width ||
-                pixel.x < 0 ||
-                pixel.y > inputImage.height ||
-                pixel.y < 0) continue;
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
             pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
