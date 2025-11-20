@@ -6,7 +6,7 @@ import 'enums.dart';
 
 invertImage(img.Image inputImage, int magnitude, List<int> coords,
     List<int> pixelSubtractValue, InversionShape shape,
-    {List<ui.Offset>? trianglePoints}) {
+    {bool rotated = false, List<ui.Offset>? trianglePoints}) {
   var dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
   var halfMag = magnitude / 2;
   var halfScaledH = dumbRatio * halfMag;
@@ -18,7 +18,11 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
   switch (shape) {
     case InversionShape.rect:
       {
-        if (centerX == halfWidth.floor() && centerY == halfHeight.floor()) {
+        if (!rotated) {
+          // final startX = centerX - halfMag.floor();
+          // final startY = centerY - halfScaledH.floor();
+          // final clampedXVal = startX > 0 ? startX : 0;
+          // final clampedYVal = startY > 0 ? startX : 0;
           final range = inputImage.getRange(
               centerX - halfMag.floor(),
               centerY - halfScaledH.floor(),
@@ -34,18 +38,7 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
             pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
           }
-        } else {
-          for (final pixel in inputImage) {
-            if (pixel.x > centerX - halfMag &&
-                pixel.x < centerX + halfMag &&
-                pixel.y > centerY - halfScaledH &&
-                pixel.y < centerY + halfScaledH) {
-              pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
-              pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
-              pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
-            }
-          }
-        }
+        } else {}
       }
     case InversionShape.box:
       {
