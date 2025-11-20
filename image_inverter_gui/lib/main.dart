@@ -25,10 +25,21 @@ class OutlinePainter extends CustomPainter {
   var shape = InversionShape.rect;
   var scaleFactor = 1.0;
   List<Offset> trianglePoints;
+  List<Offset> rectPoints;
   bool repaintFlag;
+  bool isRotated;
 
-  OutlinePainter(this.centerX, this.centerY, this.magnitude, this.rectHeight,
-      this.shape, this.scaleFactor, this.repaintFlag, this.trianglePoints);
+  OutlinePainter(
+      this.centerX,
+      this.centerY,
+      this.magnitude,
+      this.rectHeight,
+      this.shape,
+      this.scaleFactor,
+      this.repaintFlag,
+      this.trianglePoints,
+      this.isRotated,
+      this.rectPoints);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -40,12 +51,22 @@ class OutlinePainter extends CustomPainter {
       canvas.drawCircle(Offset(centerX.toDouble(), centerY.toDouble()),
           tempMagnitude / 2, myPaint);
     } else if (shape == InversionShape.rect) {
-      canvas.drawRect(
-          Rect.fromCenter(
-              center: Offset(centerX.toDouble(), centerY.toDouble()),
-              width: tempMagnitude,
-              height: rectHeight),
-          myPaint);
+      if (!isRotated) {
+        canvas.drawRect(
+            Rect.fromCenter(
+                center: Offset(centerX.toDouble(), centerY.toDouble()),
+                width: tempMagnitude,
+                height: rectHeight),
+            myPaint);
+      } else {
+        final path = Path()
+          ..moveTo(rectPoints[0].dx, rectPoints[0].dy)
+          ..lineTo(rectPoints[1].dx, rectPoints[1].dy)
+          ..lineTo(rectPoints[2].dx, rectPoints[2].dy)
+          ..lineTo(rectPoints[3].dx, rectPoints[3].dy)
+          ..close();
+        canvas.drawPath(path, myPaint);
+      }
     } else if (shape == InversionShape.triangle) {
       final path = Path()
         ..moveTo(trianglePoints[0].dx, trianglePoints[0].dy)
@@ -68,7 +89,8 @@ class OutlinePainter extends CustomPainter {
     return oldDelegate.rectHeight != rectHeight ||
         oldDelegate.shape != shape ||
         oldDelegate.repaintFlag != repaintFlag ||
-        oldDelegate.trianglePoints != trianglePoints;
+        oldDelegate.trianglePoints != trianglePoints ||
+        oldDelegate.rectPoints != rectPoints;
   }
 }
 
@@ -148,6 +170,12 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     Offset(0, 0),
     Offset(0, 0)
   ];
+  List<Offset> rectPoints = [
+    Offset(0, 0),
+    Offset(0, 0),
+    Offset(0, 0),
+    Offset(0, 0)
+  ];
 
   Size? getImageWidgetSize(BuildContext? context) {
     if (context == null) return null;
@@ -166,31 +194,49 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     );
   }
 
+  bool isRotated() {
+    return _rotSliderDegs % 180 != 0;
+  }
+
   void updateTrianglePoints() {
     final tempMagnitude = _sliderCurr *
         (decodedImg.width > _appWindowWidth
             ? _appWindowWidth / decodedImg.width
             : 1);
-    final centerX = _xInImage.floor();
-    final centerY = _yInImage.floor();
     final height = (math.sqrt(3) / 2) * tempMagnitude;
-    final point1 =
-        Offset(centerX.toDouble(), centerY.toDouble() - (2 * height) / 3);
-    final point2 = Offset(centerX.toDouble() - tempMagnitude / 2,
-        centerY.toDouble() + height / 3);
-    final point3 = Offset(centerX.toDouble() + tempMagnitude / 2,
-        centerY.toDouble() + height / 3);
+    final point1 = Offset(_xInImage, _yInImage - (2 * height) / 3);
+    final point2 =
+        Offset(_xInImage - tempMagnitude / 2, _yInImage + height / 3);
+    final point3 =
+        Offset(_xInImage + tempMagnitude / 2, _yInImage + height / 3);
 
-    final rotPoint1 = rotatePoint(
-        point1, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
-    final rotPoint2 = rotatePoint(
-        point2, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
-    final rotPoint3 = rotatePoint(
-        point3, Offset(centerX.toDouble(), centerY.toDouble()), _rotThetaRads);
+    final rotPoint1 =
+        rotatePoint(point1, Offset(_xInImage, _yInImage), _rotThetaRads);
+    final rotPoint2 =
+        rotatePoint(point2, Offset(_xInImage, _yInImage), _rotThetaRads);
+    final rotPoint3 =
+        rotatePoint(point3, Offset(_xInImage, _yInImage), _rotThetaRads);
 
     setState(() {
       rotatedTrianglePoints = [rotPoint1, rotPoint2, rotPoint3];
     });
+  }
+
+  void updateRectanglePoints() {
+    rectPoints[0] =
+        Offset(_xInImage - (_sliderCurr / 2), _yInImage - (_rectHeight / 2));
+    rectPoints[1] =
+        Offset(_xInImage + (_sliderCurr / 2), _yInImage - (_rectHeight / 2));
+    rectPoints[2] =
+        Offset(_xInImage + (_sliderCurr / 2), _yInImage + (_rectHeight / 2));
+    rectPoints[3] =
+        Offset(_xInImage - (_sliderCurr / 2), _yInImage + (_rectHeight / 2));
+    if (isRotated()) {
+      for (int i = 0; i < 4; i++) {
+        rectPoints[i] = rotatePoint(
+            rectPoints[i], Offset(_xInImage, _yInImage), _rotThetaRads);
+      }
+    }
   }
 
   void _updateLocation(PointerEvent details) {
@@ -209,6 +255,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       imgCoords[1] = _yInImage.floor();
     });
     updateTrianglePoints();
+    updateRectanglePoints();
   }
 
   @override
@@ -545,6 +592,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       imgCoords[1] = _yInImage.floor();
     });
     updateTrianglePoints();
+    updateRectanglePoints();
   }
 
   void getCoords() {
@@ -615,7 +663,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                     ? _appWindowWidth / decodedImg.width
                     : 1),
                 _repaintFlag,
-                rotatedTrianglePoints),
+                rotatedTrianglePoints,
+                isRotated(),
+                rectPoints),
             child: Image.memory(_imgMemory)),
       ]);
     } else {
@@ -688,6 +738,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                     _repaintFlag = !_repaintFlag;
                   });
                   updateTrianglePoints();
+                  updateRectanglePoints();
                 }),
             Text(rotatedTrianglePoints.toString()),
           ],
@@ -805,6 +856,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                       : 1);
             });
             updateTrianglePoints();
+            updateRectanglePoints();
           }),
       Text('$_inversionLabel: ${_sliderCurr.floor()}'),
       Row(children: [
