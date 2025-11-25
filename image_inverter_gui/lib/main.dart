@@ -740,7 +740,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                   updateTrianglePoints();
                   updateRectanglePoints();
                 }),
-            Text(rotatedTrianglePoints.toString()),
           ],
         )
       ])
