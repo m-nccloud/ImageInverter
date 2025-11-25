@@ -33,14 +33,6 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
       clampedEndX - clampedStartX + 1, clampedEndY - clampedStartY + 1);
   switch (shape) {
     case InversionShape.rect:
-      {
-        while (range.moveNext()) {
-          final pixel = range.current;
-          pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
-          pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
-          pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
-        }
-      }
     case InversionShape.box:
       {
         while (range.moveNext()) {
