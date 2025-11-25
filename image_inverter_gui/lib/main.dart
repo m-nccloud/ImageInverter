@@ -118,6 +118,7 @@ class ImgInverterWidget extends StatefulWidget {
 class _ImgInverterState extends State<ImgInverterWidget> {
   String _imgFilePath = '';
   String _loadingText = '\t\tInverting image';
+  String _editingText = '\tEditing ';
   Uint8List _imgMemory = Uint8List(0);
   bool _imageExceptionOccurred = false;
   bool _widthOnlyOverflow = false;
@@ -867,6 +868,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
             child: Text('Invert Image')),
         ElevatedButton(
             onPressed: () => {saveInvertedImage()}, child: Text('Save Image')),
+        Visibility(
+            visible: _imgFilePath.isNotEmpty && !_imageExceptionOccurred,
+            child: Text(_editingText + _imgFilePath)),
         Visibility(visible: _isLoading, child: Text(_loadingText)),
         Spacer(),
         ElevatedButton(

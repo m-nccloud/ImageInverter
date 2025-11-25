@@ -15,36 +15,34 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
   final int centerX = coords[0] != -1 ? coords[0] : halfWidth.floor();
   final int centerY = coords[1] != -1 ? coords[1] : halfHeight.floor();
 
+  final clampedStartX = math.max(centerX - halfMag.floor(), 0);
+  final clampedStartY = math.max(
+      centerY -
+          (shape == InversionShape.rect
+              ? halfScaledH.floor()
+              : halfMag.floor()),
+      0);
+  final clampedEndX = math.min(centerX + halfMag.floor(), inputImage.width - 1);
+  final clampedEndY = math.min(
+      centerY +
+          (shape == InversionShape.rect
+              ? halfScaledH.floor()
+              : halfMag.floor()),
+      inputImage.height - 1);
+  final range = inputImage.getRange(clampedStartX, clampedStartY,
+      clampedEndX - clampedStartX + 1, clampedEndY - clampedStartY + 1);
   switch (shape) {
     case InversionShape.rect:
       {
-        if (!rotated) {
-          final clampedStartX = math.max(centerX - halfMag.floor(), 0);
-          final clampedStartY = math.max(centerY - halfScaledH.floor(), 0);
-          final clampedEndX =
-              math.min(centerX + halfMag.floor(), inputImage.width - 1);
-          final clampedEndY =
-              math.min(centerY + halfScaledH.floor(), inputImage.height - 1);
-          final range = inputImage.getRange(clampedStartX, clampedStartY,
-              clampedEndX - clampedStartX + 1, clampedEndY - clampedStartY + 1);
-          while (range.moveNext()) {
-            final pixel = range.current;
-            pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
-            pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
-            pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
-          }
-        } else {}
+        while (range.moveNext()) {
+          final pixel = range.current;
+          pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
+          pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
+          pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+        }
       }
     case InversionShape.box:
       {
-        final clampedStartX = math.max(centerX - halfMag.floor(), 0);
-        final clampedStartY = math.max(centerY - halfMag.floor(), 0);
-        final clampedEndX =
-            math.min(centerX + halfMag.floor(), inputImage.width - 1);
-        final clampedEndY =
-            math.min(centerY + halfMag.floor(), inputImage.height - 1);
-        final range = inputImage.getRange(clampedStartX, clampedStartY,
-            clampedEndX - clampedStartX + 1, clampedEndY - clampedStartY + 1);
         while (range.moveNext()) {
           final pixel = range.current;
           pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
@@ -54,14 +52,6 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
       }
     case InversionShape.circle:
       {
-        final clampedStartX = math.max(centerX - halfMag.floor(), 0);
-        final clampedStartY = math.max(centerY - halfMag.floor(), 0);
-        final clampedEndX =
-            math.min(centerX + halfMag.floor(), inputImage.width - 1);
-        final clampedEndY =
-            math.min(centerY + halfMag.floor(), inputImage.height - 1);
-        final range = inputImage.getRange(clampedStartX, clampedStartY,
-            clampedEndX - clampedStartX + 1, clampedEndY - clampedStartY + 1);
         while (range.moveNext()) {
           final pixel = range.current;
           if (math.pow(pixel.x - centerX, 2) + math.pow(pixel.y - centerY, 2) <=
