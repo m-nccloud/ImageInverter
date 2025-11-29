@@ -47,40 +47,36 @@ class OutlinePainter extends CustomPainter {
     final myPaint = Paint()
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
-    if (shape == InversionShape.circle) {
-      canvas.drawCircle(Offset(centerX.toDouble(), centerY.toDouble()),
-          tempMagnitude / 2, myPaint);
-    } else if (shape == InversionShape.rect) {
-      if (!isRotated) {
-        canvas.drawRect(
-            Rect.fromCenter(
-                center: Offset(centerX.toDouble(), centerY.toDouble()),
-                width: tempMagnitude,
-                height: rectHeight),
-            myPaint);
-      } else {
+    switch (shape) {
+      case InversionShape.circle:
+        canvas.drawCircle(Offset(centerX.toDouble(), centerY.toDouble()),
+            tempMagnitude / 2, myPaint);
+      case InversionShape.box:
+      case InversionShape.rect:
+        if (!isRotated) {
+          canvas.drawRect(
+              Rect.fromCenter(
+                  center: Offset(centerX.toDouble(), centerY.toDouble()),
+                  width: tempMagnitude,
+                  height:
+                      shape == InversionShape.box ? tempMagnitude : rectHeight),
+              myPaint);
+        } else {
+          final path = Path()
+            ..moveTo(rectPoints[0].dx, rectPoints[0].dy)
+            ..lineTo(rectPoints[1].dx, rectPoints[1].dy)
+            ..lineTo(rectPoints[2].dx, rectPoints[2].dy)
+            ..lineTo(rectPoints[3].dx, rectPoints[3].dy)
+            ..close();
+          canvas.drawPath(path, myPaint);
+        }
+      case InversionShape.triangle:
         final path = Path()
-          ..moveTo(rectPoints[0].dx, rectPoints[0].dy)
-          ..lineTo(rectPoints[1].dx, rectPoints[1].dy)
-          ..lineTo(rectPoints[2].dx, rectPoints[2].dy)
-          ..lineTo(rectPoints[3].dx, rectPoints[3].dy)
+          ..moveTo(trianglePoints[0].dx, trianglePoints[0].dy)
+          ..lineTo(trianglePoints[1].dx, trianglePoints[1].dy)
+          ..lineTo(trianglePoints[2].dx, trianglePoints[2].dy)
           ..close();
         canvas.drawPath(path, myPaint);
-      }
-    } else if (shape == InversionShape.triangle) {
-      final path = Path()
-        ..moveTo(trianglePoints[0].dx, trianglePoints[0].dy)
-        ..lineTo(trianglePoints[1].dx, trianglePoints[1].dy)
-        ..lineTo(trianglePoints[2].dx, trianglePoints[2].dy)
-        ..close();
-      canvas.drawPath(path, myPaint);
-    } else {
-      canvas.drawRect(
-          Rect.fromCenter(
-              center: Offset(centerX.toDouble(), centerY.toDouble()),
-              width: tempMagnitude,
-              height: tempMagnitude),
-          myPaint);
     }
   }
 
@@ -224,14 +220,15 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   }
 
   void updateRectanglePoints() {
+    final mag = _shape == InversionShape.box ? _sliderCurr : _rectHeight;
     rectPoints[0] =
-        Offset(_xInImage - (_sliderCurr / 2), _yInImage - (_rectHeight / 2));
+        Offset(_xInImage - (_sliderCurr / 2), _yInImage - (mag / 2));
     rectPoints[1] =
-        Offset(_xInImage + (_sliderCurr / 2), _yInImage - (_rectHeight / 2));
+        Offset(_xInImage + (_sliderCurr / 2), _yInImage - (mag / 2));
     rectPoints[2] =
-        Offset(_xInImage + (_sliderCurr / 2), _yInImage + (_rectHeight / 2));
+        Offset(_xInImage + (_sliderCurr / 2), _yInImage + (mag / 2));
     rectPoints[3] =
-        Offset(_xInImage - (_sliderCurr / 2), _yInImage + (_rectHeight / 2));
+        Offset(_xInImage - (_sliderCurr / 2), _yInImage + (mag / 2));
     if (isRotated()) {
       for (int i = 0; i < 4; i++) {
         rectPoints[i] = rotatePoint(
@@ -798,6 +795,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                           _inversionLabel = "Inversion Diameter";
                         }
                       });
+                      if (value == InversionShape.rect ||
+                          value == InversionShape.box) {
+                        updateRectanglePoints();
+                      }
                     }),
                 Text("\tAccumulate"),
                 Checkbox(
