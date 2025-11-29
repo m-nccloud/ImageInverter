@@ -14,23 +14,32 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
   final halfHeight = inputImage.height / 2;
   final int centerX = coords[0] != -1 ? coords[0] : halfWidth.floor();
   final int centerY = coords[1] != -1 ? coords[1] : halfHeight.floor();
+  List<int> boundingBoxCoordinates = [0, 0, 0, 0]; //l_x, l_y, r_x, r_y
 
-  final clampedStartX = math.max(centerX - halfMag.floor(), 0);
-  final clampedStartY = math.max(
-      centerY -
-          (shape == InversionShape.rect
-              ? halfScaledH.floor()
-              : halfMag.floor()),
-      0);
-  final clampedEndX = math.min(centerX + halfMag.floor(), inputImage.width - 1);
-  final clampedEndY = math.min(
-      centerY +
-          (shape == InversionShape.rect
-              ? halfScaledH.floor()
-              : halfMag.floor()),
-      inputImage.height - 1);
-  final range = inputImage.getRange(clampedStartX, clampedStartY,
-      clampedEndX - clampedStartX + 1, clampedEndY - clampedStartY + 1);
+  if (rotated) {
+  } else {
+    boundingBoxCoordinates[0] = math.max(centerX - halfMag.floor(), 0);
+    boundingBoxCoordinates[1] = math.max(
+        centerY -
+            (shape == InversionShape.rect
+                ? halfScaledH.floor()
+                : halfMag.floor()),
+        0);
+    boundingBoxCoordinates[2] =
+        math.min(centerX + halfMag.floor(), inputImage.width - 1);
+    boundingBoxCoordinates[3] = math.min(
+        centerY +
+            (shape == InversionShape.rect
+                ? halfScaledH.floor()
+                : halfMag.floor()),
+        inputImage.height - 1);
+  }
+
+  final range = inputImage.getRange(
+      boundingBoxCoordinates[0],
+      boundingBoxCoordinates[1],
+      boundingBoxCoordinates[2] - boundingBoxCoordinates[0] + 1,
+      boundingBoxCoordinates[3] - boundingBoxCoordinates[1] + 1);
   switch (shape) {
     case InversionShape.rect:
     case InversionShape.box:
@@ -66,7 +75,8 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
           Offset(-edgeVectors[1].dy, edgeVectors[1].dx),
           Offset(-edgeVectors[2].dy, edgeVectors[2].dx)
         ];
-        for (final pixel in inputImage) {
+        while (range.moveNext()) {
+          final pixel = range.current;
           bool paintPixel = true;
           final point = ui.Offset(pixel.x.toDouble(), pixel.y.toDouble());
           for (int i = 0; i < 3; i++) {

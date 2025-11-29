@@ -192,12 +192,18 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   }
 
   bool isRotated() {
-    return _rotSliderDegs %
-            (_shape == InversionShape.box ||
-                    decodedImg.height == decodedImg.width
-                ? 90
-                : 180) !=
-        0;
+    switch (_shape) {
+      case InversionShape.box:
+        return _rotSliderDegs % 90 != 0;
+      case InversionShape.rect:
+        return _rotSliderDegs %
+                (decodedImg.width == decodedImg.height ? 90 : 180) !=
+            0;
+      case InversionShape.triangle:
+        return _rotSliderDegs % 120 != 0;
+      case InversionShape.circle:
+        return false;
+    }
   }
 
   void updateTrianglePoints() {
