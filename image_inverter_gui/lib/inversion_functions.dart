@@ -18,13 +18,18 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
 
   if (rotated) {
   } else {
+    int l_y = 0;
+    switch (shape) {
+      case InversionShape.circle:
+      case InversionShape.box:
+        l_y = math.max(centerY - halfMag.floor(), 0);
+      case InversionShape.rect:
+        l_y = math.max(centerY - halfScaledH.floor(), 0);
+      case InversionShape.triangle:
+        l_y = math.max(centerY - (magnitude * (2 / 3)).floor(), 0);
+    }
     boundingBoxCoordinates[0] = math.max(centerX - halfMag.floor(), 0);
-    boundingBoxCoordinates[1] = math.max(
-        centerY -
-            (shape == InversionShape.rect
-                ? halfScaledH.floor()
-                : halfMag.floor()),
-        0);
+    boundingBoxCoordinates[1] = l_y;
     boundingBoxCoordinates[2] =
         math.min(centerX + halfMag.floor(), inputImage.width - 1);
     boundingBoxCoordinates[3] = math.min(
