@@ -192,7 +192,12 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   }
 
   bool isRotated() {
-    return _rotSliderDegs % 180 != 0;
+    return _rotSliderDegs %
+            (_shape == InversionShape.box ||
+                    decodedImg.height == decodedImg.width
+                ? 90
+                : 180) !=
+        0;
   }
 
   void updateTrianglePoints() {
@@ -496,7 +501,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     invertImage(
         inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt, _shape,
-        trianglePoints: rotatedTrianglePoints);
+        rotated: isRotated(), trianglePoints: rotatedTrianglePoints);
     ui.Image uiImg = await convertImageToFlutterUi(inputImage);
     decodedImgNext = inputImage.clone();
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
