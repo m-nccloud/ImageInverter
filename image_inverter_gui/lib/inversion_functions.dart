@@ -6,7 +6,7 @@ import 'enums.dart';
 
 invertImage(img.Image inputImage, int magnitude, List<int> coords,
     List<int> pixelSubtractValue, InversionShape shape,
-    {bool rotated = false, List<ui.Offset>? trianglePoints}) {
+    {bool rotated = false, List<ui.Offset>? polygonPoints}) {
   final dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
   final halfMag = magnitude / 2;
   final halfScaledH = dumbRatio * halfMag;
@@ -14,9 +14,33 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
   final halfHeight = inputImage.height / 2;
   final int centerX = coords[0] != -1 ? coords[0] : halfWidth.floor();
   final int centerY = coords[1] != -1 ? coords[1] : halfHeight.floor();
-  List<int> boundingBoxCoordinates = [0, 0, 0, 0]; //l_x, l_y, r_x, r_y
 
-  if (rotated) {
+  const int maxInt = -1 >>> 1;
+  List<int> boundingBoxCoordinates = [
+    maxInt,
+    maxInt,
+    -maxInt,
+    -maxInt
+  ]; //l_x, l_y, r_x, r_y
+
+  if (rotated && polygonPoints != null) {
+    for (int i = 0; i < polygonPoints.length; i++) {
+      if (boundingBoxCoordinates[0] > polygonPoints[i].dx)
+        boundingBoxCoordinates[0] = polygonPoints[i].dx.floor();
+      if (boundingBoxCoordinates[1] > polygonPoints[i].dy)
+        boundingBoxCoordinates[1] = polygonPoints[i].dy.floor();
+      if (boundingBoxCoordinates[2] < polygonPoints[i].dx)
+        boundingBoxCoordinates[2] = polygonPoints[i].dx.floor();
+      if (boundingBoxCoordinates[3] < polygonPoints[i].dy)
+        boundingBoxCoordinates[3] = polygonPoints[i].dy.floor();
+    }
+    print("bounding box pre: $boundingBoxCoordinates");
+    boundingBoxCoordinates[0] = math.max(boundingBoxCoordinates[0], 0);
+    boundingBoxCoordinates[1] = math.max(boundingBoxCoordinates[1], 0);
+    boundingBoxCoordinates[2] =
+        math.min(boundingBoxCoordinates[2], inputImage.width - 1);
+    boundingBoxCoordinates[0] =
+        math.min(boundingBoxCoordinates[0], inputImage.height - 1);
   } else {
     int l_y = 0;
     switch (shape) {
@@ -39,6 +63,7 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
                 : halfMag.floor()),
         inputImage.height - 1);
   }
+  print("bounding box: $boundingBoxCoordinates");
 
   final range = inputImage.getRange(
       boundingBoxCoordinates[0],
@@ -71,9 +96,9 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
     case InversionShape.triangle:
       {
         final edgeVectors = [
-          trianglePoints![1] - trianglePoints[0],
-          trianglePoints[2] - trianglePoints[1],
-          trianglePoints[0] - trianglePoints[2]
+          polygonPoints![1] - polygonPoints[0],
+          polygonPoints[2] - polygonPoints[1],
+          polygonPoints[0] - polygonPoints[2]
         ];
         final edgeNormals = [
           Offset(-edgeVectors[0].dy, edgeVectors[0].dx),
@@ -85,8 +110,8 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
           bool paintPixel = true;
           final point = ui.Offset(pixel.x.toDouble(), pixel.y.toDouble());
           for (int i = 0; i < 3; i++) {
-            if ((edgeNormals[i].dx * (point.dx - trianglePoints[i].dx) +
-                    edgeNormals[i].dy * (point.dy - trianglePoints[i].dy)) >
+            if ((edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
+                    edgeNormals[i].dy * (point.dy - polygonPoints[i].dy)) >
                 0) paintPixel = false;
           }
           if (paintPixel) {
