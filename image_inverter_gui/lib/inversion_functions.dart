@@ -5,7 +5,7 @@ import 'package:image/image.dart' as img;
 import 'enums.dart';
 
 invertImage(img.Image inputImage, int magnitude, List<int> coords,
-    List<int> pixelSubtractValue, InversionShape shape,
+    List<int> pixelSubtractValue, InversionShape shape, double rotationTheta,
     {bool rotated = false, List<ui.Offset>? polygonPoints}) {
   final dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
   final halfMag = magnitude / 2;
@@ -34,7 +34,6 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
       if (boundingBoxCoordinates[3] < polygonPoints[i].dy)
         boundingBoxCoordinates[3] = polygonPoints[i].dy.floor();
     }
-    print("bounding box pre: $boundingBoxCoordinates");
     boundingBoxCoordinates[0] = math.max(boundingBoxCoordinates[0], 0);
     boundingBoxCoordinates[1] = math.max(boundingBoxCoordinates[1], 0);
     boundingBoxCoordinates[2] =
@@ -63,7 +62,6 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
                 : halfMag.floor()),
         inputImage.height - 1);
   }
-  print("bounding box: $boundingBoxCoordinates");
 
   final range = inputImage.getRange(
       boundingBoxCoordinates[0],
@@ -74,11 +72,27 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
     case InversionShape.rect:
     case InversionShape.box:
       {
+        final cosTheta = math.cos(rotationTheta);
+        final sinTheta = math.sin(rotationTheta);
         while (range.moveNext()) {
           final pixel = range.current;
-          pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
-          pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
-          pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+          if (rotated) {
+            final dx = pixel.x - centerX;
+            final dy = pixel.y - centerY;
+            final alignedX = dx * cosTheta + dy * sinTheta;
+            final alignedY = -dx * sinTheta + dy * cosTheta;
+            if (alignedX.abs() <= halfMag &&
+                alignedY.abs() <=
+                    (shape == InversionShape.rect ? halfScaledH : halfMag)) {
+              pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
+              pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
+              pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+            }
+          } else {
+            pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
+            pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
+            pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+          }
         }
       }
     case InversionShape.circle:
