@@ -17,10 +17,10 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
 
   const int maxInt = -1 >>> 1;
   List<int> boundingBoxCoordinates = [
-    maxInt,
-    maxInt,
-    -maxInt,
-    -maxInt
+    1 << 30,
+    1 << 30,
+    -(1 << 30),
+    -(1 << 30)
   ]; //l_x, l_y, r_x, r_y
 
   if (rotated && polygonPoints != null) {
@@ -30,16 +30,16 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
       if (boundingBoxCoordinates[1] > polygonPoints[i].dy)
         boundingBoxCoordinates[1] = polygonPoints[i].dy.floor();
       if (boundingBoxCoordinates[2] < polygonPoints[i].dx)
-        boundingBoxCoordinates[2] = polygonPoints[i].dx.floor();
+        boundingBoxCoordinates[2] = polygonPoints[i].dx.ceil();
       if (boundingBoxCoordinates[3] < polygonPoints[i].dy)
-        boundingBoxCoordinates[3] = polygonPoints[i].dy.floor();
+        boundingBoxCoordinates[3] = polygonPoints[i].dy.ceil();
     }
     boundingBoxCoordinates[0] = math.max(boundingBoxCoordinates[0], 0);
     boundingBoxCoordinates[1] = math.max(boundingBoxCoordinates[1], 0);
     boundingBoxCoordinates[2] =
         math.min(boundingBoxCoordinates[2], inputImage.width - 1);
-    boundingBoxCoordinates[0] =
-        math.min(boundingBoxCoordinates[0], inputImage.height - 1);
+    boundingBoxCoordinates[3] =
+        math.min(boundingBoxCoordinates[3], inputImage.height - 1);
   } else {
     int l_y = 0;
     switch (shape) {
@@ -81,13 +81,13 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
             final dy = pixel.y - centerY;
             final alignedX = dx * cosTheta + dy * sinTheta;
             final alignedY = -dx * sinTheta + dy * cosTheta;
-            if (alignedX.abs() <= halfMag &&
-                alignedY.abs() <=
-                    (shape == InversionShape.rect ? halfScaledH : halfMag)) {
-              pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
-              pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
-              pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
-            }
+            // if (alignedX.abs() <= halfMag &&
+            //     alignedY.abs() <=
+            //         (shape == InversionShape.rect ? halfScaledH : halfMag)) {
+            pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
+            pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
+            pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+            // }
           } else {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();

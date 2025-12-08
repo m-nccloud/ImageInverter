@@ -39,7 +39,9 @@ class OutlinePainter extends CustomPainter {
       this.repaintFlag,
       this.trianglePoints,
       this.isRotated,
-      this.rectPoints);
+      this.rectPoints) {
+    print(scaleFactor);
+  }
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -232,20 +234,29 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
   void updateRectanglePoints() {
     final mag = _shape == InversionShape.box ? _sliderCurr : _rectHeight;
-    rectPoints[0] =
-        Offset(_xInImage - (_sliderCurr / 2), _yInImage - (mag / 2));
-    rectPoints[1] =
-        Offset(_xInImage + (_sliderCurr / 2), _yInImage - (mag / 2));
-    rectPoints[2] =
-        Offset(_xInImage + (_sliderCurr / 2), _yInImage + (mag / 2));
-    rectPoints[3] =
-        Offset(_xInImage - (_sliderCurr / 2), _yInImage + (mag / 2));
-    if (isRotated()) {
-      for (int i = 0; i < 4; i++) {
-        rectPoints[i] = rotatePoint(
-            rectPoints[i], Offset(_xInImage, _yInImage), _rotThetaRads);
+    final widthOverflow = decodedImg.width > _appWindowWidth;
+    final scaleFactor = decodedImg.width / _appWindowWidth;
+
+    setState(() {
+      rectPoints[0] = Offset(
+          _xInImage - (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
+          _yInImage - (mag / 2));
+      rectPoints[1] = Offset(
+          _xInImage + (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
+          _yInImage - (mag / 2));
+      rectPoints[2] = Offset(
+          _xInImage + (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
+          _yInImage + (mag / 2));
+      rectPoints[3] = Offset(
+          _xInImage - (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
+          _yInImage + (mag / 2));
+      if (isRotated()) {
+        for (int i = 0; i < 4; i++) {
+          rectPoints[i] = rotatePoint(
+              rectPoints[i], Offset(_xInImage, _yInImage), _rotThetaRads);
+        }
       }
-    }
+    });
   }
 
   void _updateLocation(PointerEvent details) {
