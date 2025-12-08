@@ -235,7 +235,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   void updateRectanglePoints() {
     final mag = _shape == InversionShape.box ? _sliderCurr : _rectHeight;
     final widthOverflow = decodedImg.width > _appWindowWidth;
-    final scaleFactor = decodedImg.width / _appWindowWidth;
+    final scaleFactor = _appWindowWidth / decodedImg.width;
 
     setState(() {
       rectPoints[0] = Offset(
