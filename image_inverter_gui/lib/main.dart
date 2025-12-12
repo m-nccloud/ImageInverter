@@ -236,24 +236,30 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     final mag = _shape == InversionShape.box ? _sliderCurr : _rectHeight;
     final widthOverflow = decodedImg.width > _appWindowWidth;
     final scaleFactor = _appWindowWidth / decodedImg.width;
-
+    getCoords();
     setState(() {
       rectPoints[0] = Offset(
-          _xInImage - (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
-          _yInImage - (mag / 2));
+          imgCoords[0].toDouble() -
+              (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
+          imgCoords[1].toDouble() - (mag / 2));
       rectPoints[1] = Offset(
-          _xInImage + (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
-          _yInImage - (mag / 2));
+          imgCoords[0].toDouble() +
+              (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
+          imgCoords[1].toDouble() - (mag / 2));
       rectPoints[2] = Offset(
-          _xInImage + (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
-          _yInImage + (mag / 2));
+          imgCoords[0].toDouble() +
+              (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
+          imgCoords[1].toDouble() + (mag / 2));
       rectPoints[3] = Offset(
-          _xInImage - (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
-          _yInImage + (mag / 2));
+          imgCoords[0].toDouble() -
+              (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
+          imgCoords[1].toDouble() + (mag / 2));
       if (isRotated()) {
         for (int i = 0; i < 4; i++) {
           rectPoints[i] = rotatePoint(
-              rectPoints[i], Offset(_xInImage, _yInImage), _rotThetaRads);
+              rectPoints[i],
+              Offset(imgCoords[0].toDouble(), imgCoords[1].toDouble()),
+              _rotThetaRads);
         }
       }
     });

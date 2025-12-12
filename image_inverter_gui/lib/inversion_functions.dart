@@ -81,13 +81,13 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
             final dy = pixel.y - centerY;
             final alignedX = dx * cosTheta + dy * sinTheta;
             final alignedY = -dx * sinTheta + dy * cosTheta;
-            // if (alignedX.abs() <= halfMag &&
-            //     alignedY.abs() <=
-            //         (shape == InversionShape.rect ? halfScaledH : halfMag)) {
-            pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
-            pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
-            pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
-            // }
+            if (alignedX.abs() <= halfMag &&
+                alignedY.abs() <=
+                    (shape == InversionShape.rect ? halfScaledH : halfMag)) {
+              pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
+              pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
+              pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+            }
           } else {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
