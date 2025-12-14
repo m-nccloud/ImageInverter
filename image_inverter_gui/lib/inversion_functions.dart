@@ -25,13 +25,13 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
 
   if (rotated && polygonPoints != null) {
     for (int i = 0; i < polygonPoints.length; i++) {
-      if (boundingBoxCoordinates[0] > polygonPoints[i].dx)
+      if (boundingBoxCoordinates[0] > polygonPoints[i].dx.floor())
         boundingBoxCoordinates[0] = polygonPoints[i].dx.floor();
-      if (boundingBoxCoordinates[1] > polygonPoints[i].dy)
+      if (boundingBoxCoordinates[1] > polygonPoints[i].dy.floor())
         boundingBoxCoordinates[1] = polygonPoints[i].dy.floor();
-      if (boundingBoxCoordinates[2] < polygonPoints[i].dx)
+      if (boundingBoxCoordinates[2] < polygonPoints[i].dx.ceil())
         boundingBoxCoordinates[2] = polygonPoints[i].dx.ceil();
-      if (boundingBoxCoordinates[3] < polygonPoints[i].dy)
+      if (boundingBoxCoordinates[3] < polygonPoints[i].dy.ceil())
         boundingBoxCoordinates[3] = polygonPoints[i].dy.ceil();
     }
     boundingBoxCoordinates[0] = math.max(boundingBoxCoordinates[0], 0);

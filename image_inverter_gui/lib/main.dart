@@ -65,10 +65,14 @@ class OutlinePainter extends CustomPainter {
               myPaint);
         } else {
           final path = Path()
-            ..moveTo(rectPoints[0].dx, rectPoints[0].dy)
-            ..lineTo(rectPoints[1].dx, rectPoints[1].dy)
-            ..lineTo(rectPoints[2].dx, rectPoints[2].dy)
-            ..lineTo(rectPoints[3].dx, rectPoints[3].dy)
+            ..moveTo(
+                rectPoints[0].dx * scaleFactor, rectPoints[0].dy * scaleFactor)
+            ..lineTo(
+                rectPoints[1].dx * scaleFactor, rectPoints[1].dy * scaleFactor)
+            ..lineTo(
+                rectPoints[2].dx * scaleFactor, rectPoints[2].dy * scaleFactor)
+            ..lineTo(
+                rectPoints[3].dx * scaleFactor, rectPoints[3].dy * scaleFactor)
             ..close();
           canvas.drawPath(path, myPaint);
         }
@@ -182,9 +186,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     return box.size;
   }
 
-  Offset rotatePoint(Offset point, Offset center, double theta) {
-    final dx = point.dx - center.dx;
-    final dy = point.dy - center.dy;
+  Offset rotatePoint(Offset point, Offset center, double theta,
+      {scaleFactor = 1}) {
+    final dx = point.dx - center.dx * scaleFactor;
+    final dy = point.dy - center.dy * scaleFactor;
     final cosT = math.cos(theta);
     final sinT = math.sin(theta);
     return Offset(
@@ -235,25 +240,25 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   void updateRectanglePoints() {
     final mag = _shape == InversionShape.box ? _sliderCurr : _rectHeight;
     final widthOverflow = decodedImg.width > _appWindowWidth;
-    final scaleFactor = _appWindowWidth / decodedImg.width;
+    final scaleFactor = decodedImg.width / _appWindowWidth;
     getCoords();
     setState(() {
       rectPoints[0] = Offset(
-          imgCoords[0].toDouble() -
-              (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
-          imgCoords[1].toDouble() - (mag / 2));
+          imgCoords[0].toDouble() - (_sliderCurr / 2),
+          imgCoords[1].toDouble() -
+              (mag / 2) * (widthOverflow ? scaleFactor : 1));
       rectPoints[1] = Offset(
-          imgCoords[0].toDouble() +
-              (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
-          imgCoords[1].toDouble() - (mag / 2));
+          imgCoords[0].toDouble() + (_sliderCurr / 2),
+          imgCoords[1].toDouble() -
+              (mag / 2) * (widthOverflow ? scaleFactor : 1));
       rectPoints[2] = Offset(
-          imgCoords[0].toDouble() +
-              (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
-          imgCoords[1].toDouble() + (mag / 2));
+          imgCoords[0].toDouble() + (_sliderCurr / 2),
+          imgCoords[1].toDouble() +
+              (mag / 2) * (widthOverflow ? scaleFactor : 1));
       rectPoints[3] = Offset(
-          imgCoords[0].toDouble() -
-              (_sliderCurr / 2) * (widthOverflow ? scaleFactor : 1),
-          imgCoords[1].toDouble() + (mag / 2));
+          imgCoords[0].toDouble() - (_sliderCurr / 2),
+          imgCoords[1].toDouble() +
+              (mag / 2) * (widthOverflow ? scaleFactor : 1));
       if (isRotated()) {
         for (int i = 0; i < 4; i++) {
           rectPoints[i] = rotatePoint(
@@ -629,8 +634,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       if (decodedImg.width > _appWindowWidth) {
         var scaledXCoord = _xInImage * (decodedImg.width / _appWindowWidth);
         var scaledYCoord = _yInImage * (decodedImg.width / _appWindowWidth);
-        imgCoords[0] = scaledXCoord.floor();
-        imgCoords[1] = scaledYCoord.floor();
+        imgCoords[0] = scaledXCoord.toInt();
+        imgCoords[1] = scaledYCoord.toInt();
       }
     });
   }
