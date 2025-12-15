@@ -78,9 +78,12 @@ class OutlinePainter extends CustomPainter {
         }
       case InversionShape.triangle:
         final path = Path()
-          ..moveTo(trianglePoints[0].dx, trianglePoints[0].dy)
-          ..lineTo(trianglePoints[1].dx, trianglePoints[1].dy)
-          ..lineTo(trianglePoints[2].dx, trianglePoints[2].dy)
+          ..moveTo(trianglePoints[0].dx * scaleFactor,
+              trianglePoints[0].dy * scaleFactor)
+          ..lineTo(trianglePoints[1].dx * scaleFactor,
+              trianglePoints[1].dy * scaleFactor)
+          ..lineTo(trianglePoints[2].dx * scaleFactor,
+              trianglePoints[2].dy * scaleFactor)
           ..close();
         canvas.drawPath(path, myPaint);
     }
@@ -214,23 +217,28 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   }
 
   void updateTrianglePoints() {
-    final tempMagnitude = _sliderCurr *
-        (decodedImg.width > _appWindowWidth
-            ? _appWindowWidth / decodedImg.width
-            : 1);
+    getCoords();
+    final tempMagnitude = _sliderCurr;
     final height = (math.sqrt(3) / 2) * tempMagnitude;
-    final point1 = Offset(_xInImage, _yInImage - (2 * height) / 3);
-    final point2 =
-        Offset(_xInImage - tempMagnitude / 2, _yInImage + height / 3);
-    final point3 =
-        Offset(_xInImage + tempMagnitude / 2, _yInImage + height / 3);
+    final point1 = Offset(
+        imgCoords[0].toDouble(), imgCoords[1].toDouble() - (2 * height) / 3);
+    final point2 = Offset(imgCoords[0].toDouble() - tempMagnitude / 2,
+        imgCoords[1].toDouble() + height / 3);
+    final point3 = Offset(imgCoords[0].toDouble() + tempMagnitude / 2,
+        imgCoords[1].toDouble() + height / 3);
 
-    final rotPoint1 =
-        rotatePoint(point1, Offset(_xInImage, _yInImage), _rotThetaRads);
-    final rotPoint2 =
-        rotatePoint(point2, Offset(_xInImage, _yInImage), _rotThetaRads);
-    final rotPoint3 =
-        rotatePoint(point3, Offset(_xInImage, _yInImage), _rotThetaRads);
+    final rotPoint1 = rotatePoint(
+        point1,
+        Offset(imgCoords[0].toDouble(), imgCoords[1].toDouble()),
+        _rotThetaRads);
+    final rotPoint2 = rotatePoint(
+        point2,
+        Offset(imgCoords[0].toDouble(), imgCoords[1].toDouble()),
+        _rotThetaRads);
+    final rotPoint3 = rotatePoint(
+        point3,
+        Offset(imgCoords[0].toDouble(), imgCoords[1].toDouble()),
+        _rotThetaRads);
 
     setState(() {
       rotatedTrianglePoints = [rotPoint1, rotPoint2, rotPoint3];

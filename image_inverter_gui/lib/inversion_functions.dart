@@ -15,7 +15,6 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
   final int centerX = coords[0] != -1 ? coords[0] : halfWidth.floor();
   final int centerY = coords[1] != -1 ? coords[1] : halfHeight.floor();
 
-  const int maxInt = -1 >>> 1;
   List<int> boundingBoxCoordinates = [
     1 << 30,
     1 << 30,
