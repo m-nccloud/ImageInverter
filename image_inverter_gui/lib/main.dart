@@ -246,10 +246,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   }
 
   void updateRectanglePoints() {
+    getCoords();
     final mag = _shape == InversionShape.box ? _sliderCurr : _rectHeight;
     final widthOverflow = decodedImg.width > _appWindowWidth;
     final scaleFactor = decodedImg.width / _appWindowWidth;
-    getCoords();
     setState(() {
       rectPoints[0] = Offset(
           imgCoords[0].toDouble() - (_sliderCurr / 2),
@@ -842,6 +842,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                       if (value == InversionShape.rect ||
                           value == InversionShape.box) {
                         updateRectanglePoints();
+                      }
+                      if (value == InversionShape.triangle) {
+                        updateTrianglePoints();
                       }
                     }),
                 Text("\tAccumulate"),
