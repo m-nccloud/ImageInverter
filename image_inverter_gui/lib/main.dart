@@ -158,10 +158,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   double _rectHeight = 0.0;
   InversionShape _shape = InversionShape.rect;
   img.Image decodedImg = img.Image.empty();
-  img.Image decodedImgPrev = img.Image.empty();
-  img.Image decodedImgNext = img.Image.empty();
-  bool canUndo = false;
-  bool canRedo = false;
+  List<img.Image> decodedImgPrevStack = [];
+  List<img.Image> decodedImgNextStack = [];
+  bool get canUndo => decodedImgPrevStack.isNotEmpty;
+  bool get canRedo => decodedImgNextStack.isNotEmpty;
   var _pixelSliderCurr = [255.0, 255.0, 255.0];
   var _pixelSliderCurrInt = [255, 255, 255];
   late ui.Codec codec;
@@ -533,7 +533,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         ? decodedImg
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
 
-    decodedImgPrev = decodedImg.clone();
+    decodedImgPrevStack.add(decodedImg.clone());
 
     invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
         _shape, _rotThetaRads,
@@ -542,14 +542,12 @@ class _ImgInverterState extends State<ImgInverterWidget> {
             ? rotatedTrianglePoints
             : rectPoints);
     ui.Image uiImg = await convertImageToFlutterUi(inputImage);
-    decodedImgNext = inputImage.clone();
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
       inversionTimer.cancel();
       _isLoading = false;
       _loadingText = "\t\tInverting image";
-      canUndo = true;
     });
   }
 
@@ -560,16 +558,17 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     });
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    ui.Image uiImg = await convertImageToFlutterUi(decodedImgPrev);
+    // ui.Image uiImg = await convertImageToFlutterUi(decodedImgPrev);
+    ui.Image uiImg = await convertImageToFlutterUi(decodedImgPrevStack.last);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+    decodedImgNextStack.add(decodedImg.clone());
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
-      decodedImg = decodedImgPrev.clone();
+      decodedImg = decodedImgPrevStack.last.clone();
       inversionTimer.cancel();
       _isLoading = false;
-      canUndo = false;
-      canRedo = true;
     });
+    decodedImgPrevStack.removeLast();
   }
 
   void redoInversion() async {
@@ -579,16 +578,18 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     });
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    ui.Image uiImg = await convertImageToFlutterUi(decodedImgNext);
+    // ui.Image uiImg = await convertImageToFlutterUi(decodedImgNext);
+    ui.Image uiImg = await convertImageToFlutterUi(decodedImgNextStack.last);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+    decodedImgPrevStack.add(decodedImg.clone());
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
-      decodedImg = decodedImgNext.clone();
+      // decodedImg = decodedImgNext.clone();
+      decodedImg = decodedImgNextStack.last.clone();
       inversionTimer.cancel();
       _isLoading = false;
-      canRedo = false;
-      canUndo = true;
     });
+    decodedImgNextStack.removeLast();
   }
 
   void printVars() {
