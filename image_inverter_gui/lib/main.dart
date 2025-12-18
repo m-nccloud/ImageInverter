@@ -534,6 +534,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
 
     decodedImgPrevStack.add(decodedImg.clone());
+    decodedImgNextStack.clear();
 
     invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
         _shape, _rotThetaRads,
