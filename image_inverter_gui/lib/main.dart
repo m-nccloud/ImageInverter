@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:ui' as ui;
 import 'dart:io';
@@ -143,7 +144,17 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   int _screenThreshold = 0;
   int _imageBuildCount = 0;
   double _rotSliderDegs = 0;
-  double _rotSliderMax = 360;
+  double _rotSliderMax = 180;
+  static const Map<InversionShape, double> _shapeRotMaxes = {
+    InversionShape.rect: 180.0,
+    InversionShape.box: 90.0,
+    InversionShape.circle: 0.0,
+    InversionShape.triangle: 120.0
+  };
+  double _rectSliderMax = 180;
+  double _boxSliderMax = 90;
+  double _circSliderMax = 0;
+  double _triSliderMax = 120;
   double _rotThetaRads = 0;
   double _imgWidgetPadding = 0;
   double _sliderCurr = 0;
@@ -768,7 +779,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       ]),
       Column(children: [
         Transform.translate(
-            offset: Offset(0.0, 12.5),
+            offset: Offset(-20.0, 12.5),
             child: Text("Rotation: ${_rotSliderDegs.ceil()}")),
         Row(
           children: [
@@ -784,10 +795,34 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                   updateTrianglePoints();
                   updateRectanglePoints();
                 }),
+            SizedBox(
+              width: 30,
+              child: TextField(
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  TextInputFormatter.withFunction((oldValue, newValue) {
+                    if (newValue.text.isEmpty) return newValue;
+
+                    final value = int.tryParse(newValue.text);
+                    if (value == null || value < 0 || value > 360) {
+                      return oldValue; // reject change
+                    }
+                    return newValue;
+                  }),
+                ],
+              ),
+            )
           ],
         )
       ])
     ];
+  }
+
+  double changeShapeDegs(
+      double rotDegs, InversionShape shapeFrom, InversionShape shapeTo) {
+    if (shapeFrom == InversionShape.circle) return 0;
+    return (rotDegs / _shapeRotMaxes[shapeFrom]!) * _shapeRotMaxes[shapeTo]!;
   }
 
   List<Widget> topBarButtons() {
@@ -826,19 +861,25 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                             ))
                         .toList(),
                     onChanged: (value) {
+                      _rotSliderDegs =
+                          changeShapeDegs(_rotSliderDegs, _shape, value!);
                       setState(() {
                         if (value == InversionShape.rect) {
                           _shape = InversionShape.rect;
                           _inversionLabel = "Inversion Width";
+                          _rotSliderMax = _rectSliderMax;
                         } else if (value == InversionShape.box) {
                           _shape = InversionShape.box;
                           _inversionLabel = "Inversion Width";
+                          _rotSliderMax = _boxSliderMax;
                         } else if (value == InversionShape.triangle) {
                           _shape = InversionShape.triangle;
                           _inversionLabel = "Inversion Base";
+                          _rotSliderMax = _triSliderMax;
                         } else {
                           _shape = InversionShape.circle;
                           _inversionLabel = "Inversion Diameter";
+                          _rotSliderMax = _circSliderMax;
                         }
                       });
                       if (value == InversionShape.rect ||
