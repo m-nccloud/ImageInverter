@@ -194,6 +194,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     Offset(0, 0)
   ];
 
+  late final TextEditingController _rotTextController;
+
   Size? getImageWidgetSize(BuildContext? context) {
     if (context == null) return null;
     final box = context.findRenderObject() as RenderBox;
@@ -321,6 +323,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     } else if (Platform.isLinux) {
       initDisplays();
     }
+    _rotTextController =
+        TextEditingController(text: _rotSliderDegs.toStringAsFixed(0));
   }
 
   initDisplays() async {
@@ -330,6 +334,12 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       _displayWidth = display.size.width.round();
       _screenThreshold = (_displayWidth * 0.7).floor();
     });
+  }
+
+  @override
+  void dispose() {
+    _rotTextController.dispose();
+    super.dispose();
   }
 
   @override
@@ -791,27 +801,49 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                     _rotSliderDegs = val;
                     _rotThetaRads = (_rotSliderDegs * (math.pi / 180));
                     _repaintFlag = !_repaintFlag;
+                    _rotTextController.text = val.toStringAsFixed(0);
                   });
                   updateTrianglePoints();
                   updateRectanglePoints();
                 }),
             SizedBox(
-              width: 30,
+              height: 25,
+              width: 60,
               child: TextField(
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  TextInputFormatter.withFunction((oldValue, newValue) {
-                    if (newValue.text.isEmpty) return newValue;
-
-                    final value = int.tryParse(newValue.text);
-                    if (value == null || value < 0 || value > 360) {
-                      return oldValue; // reject change
+                  controller: _rotTextController,
+                  onChanged: (value) {
+                    final parsedInput = double.tryParse(value);
+                    if (parsedInput != null) {
+                      setState(() {
+                        _rotSliderDegs = parsedInput.clamp(0, _rotSliderMax);
+                        _rotThetaRads = (_rotSliderDegs * (math.pi / 180));
+                        _repaintFlag = !_repaintFlag;
+                      });
+                      updateRectanglePoints();
+                      updateTrianglePoints();
                     }
-                    return newValue;
-                  }),
-                ],
-              ),
+                  },
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.digitsOnly,
+                    TextInputFormatter.withFunction((oldValue, newValue) {
+                      if (newValue.text.isEmpty) return newValue;
+
+                      final value = double.tryParse(newValue.text);
+                      if (value == null || value < 0 || value > 360) {
+                        return oldValue; // reject change
+                      }
+                      return newValue;
+                    }),
+                  ],
+                  decoration: const InputDecoration(
+                    filled: true,
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                      vertical: 8,
+                      horizontal: 12,
+                    ),
+                  )),
             )
           ],
         )
