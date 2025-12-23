@@ -953,6 +953,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           child: Listener(
               key: _keyImage,
               onPointerDown: _updateLocation,
+              onPointerMove: _updateLocation,
               child: Stack(
                 children: [
                   imgGetter(),
