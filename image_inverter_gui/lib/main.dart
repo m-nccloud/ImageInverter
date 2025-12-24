@@ -132,6 +132,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _appFullScreenedWithPadding = false;
   bool _repaintFlag = false;
   bool _accumulate = true;
+  bool _antiAlias = true;
   bool _isLoading = false;
   bool _imgNotYetBuilt = true;
   bool _startedFullscreen = false;
@@ -928,6 +929,14 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                     onChanged: (bool? value) => {
                           setState(() {
                             _accumulate = value!;
+                          })
+                        }),
+                Text("AA"),
+                Checkbox(
+                    value: _antiAlias,
+                    onChanged: (bool? value) => {
+                          setState(() {
+                            _antiAlias = value!;
                           })
                         }),
                 ElevatedButton(
