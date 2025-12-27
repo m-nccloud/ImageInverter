@@ -131,7 +131,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _appFullScreened = false;
   bool _appFullScreenedWithPadding = false;
   bool _repaintFlag = false;
-  bool _accumulate = true;
   bool _antiAlias = true;
   bool _isLoading = false;
   bool _imgNotYetBuilt = true;
@@ -551,15 +550,14 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
 
-    var inputImage = _accumulate
-        ? decodedImg
-        : await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
+    var inputImage =
+        await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
 
     decodedImgPrevStack.add(decodedImg.clone());
     decodedImgNextStack.clear();
 
     invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
-        _shape, _rotThetaRads,
+        _shape, _rotThetaRads, _antiAlias,
         rotated: isRotated(),
         polygonPoints: _shape == InversionShape.triangle
             ? rotatedTrianglePoints
@@ -629,9 +627,13 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     var savePath = await FilePicker.platform
         .saveFile(type: FileType.custom, allowedExtensions: ['png']);
     if (savePath != null) {
+      savePath = savePath.split('.')[0];
       savePath = "$savePath.png";
       var saveImgFile = await File(savePath).create(recursive: true);
       await saveImgFile.writeAsBytes(_imgMemory);
+      setState(() {
+        _imgFilePath = savePath!;
+      });
     }
   }
 
@@ -643,6 +645,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
       decodedImg = uneditedImg;
+      decodedImgNextStack.clear();
     });
   }
 
@@ -923,14 +926,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                         updateTrianglePoints();
                       }
                     }),
-                Text("\tAccumulate"),
-                Checkbox(
-                    value: _accumulate,
-                    onChanged: (bool? value) => {
-                          setState(() {
-                            _accumulate = value!;
-                          })
-                        }),
                 Text("AA"),
                 Checkbox(
                     value: _antiAlias,

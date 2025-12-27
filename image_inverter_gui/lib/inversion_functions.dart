@@ -4,9 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'enums.dart';
 
-invertImage(img.Image inputImage, int magnitude, List<int> coords,
-    List<int> pixelSubtractValue, InversionShape shape, double rotationTheta,
-    {bool rotated = false, List<ui.Offset>? polygonPoints}) {
+invertImage(
+    img.Image inputImage,
+    int magnitude,
+    List<int> coords,
+    List<int> pixelSubtractValue,
+    InversionShape shape,
+    double rotationTheta,
+    bool antiAlias,
+    {bool rotated = false,
+    List<ui.Offset>? polygonPoints}) {
   final dumbRatio = inputImage.height.toDouble() / inputImage.width.toDouble();
   final halfMag = magnitude / 2;
   final halfScaledH = dumbRatio * halfMag;
@@ -24,14 +31,18 @@ invertImage(img.Image inputImage, int magnitude, List<int> coords,
 
   if (rotated && polygonPoints != null) {
     for (int i = 0; i < polygonPoints.length; i++) {
-      if (boundingBoxCoordinates[0] > polygonPoints[i].dx.floor())
+      if (boundingBoxCoordinates[0] > polygonPoints[i].dx.floor()) {
         boundingBoxCoordinates[0] = polygonPoints[i].dx.floor();
-      if (boundingBoxCoordinates[1] > polygonPoints[i].dy.floor())
+      }
+      if (boundingBoxCoordinates[1] > polygonPoints[i].dy.floor()) {
         boundingBoxCoordinates[1] = polygonPoints[i].dy.floor();
-      if (boundingBoxCoordinates[2] < polygonPoints[i].dx.ceil())
+      }
+      if (boundingBoxCoordinates[2] < polygonPoints[i].dx.ceil()) {
         boundingBoxCoordinates[2] = polygonPoints[i].dx.ceil();
-      if (boundingBoxCoordinates[3] < polygonPoints[i].dy.ceil())
+      }
+      if (boundingBoxCoordinates[3] < polygonPoints[i].dy.ceil()) {
         boundingBoxCoordinates[3] = polygonPoints[i].dy.ceil();
+      }
     }
     boundingBoxCoordinates[0] = math.max(boundingBoxCoordinates[0], 0);
     boundingBoxCoordinates[1] = math.max(boundingBoxCoordinates[1], 0);
