@@ -550,8 +550,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
 
-    var inputImage =
-        await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
+    var inputImage = decodedImg;
 
     decodedImgPrevStack.add(decodedImg.clone());
     decodedImgNextStack.clear();
