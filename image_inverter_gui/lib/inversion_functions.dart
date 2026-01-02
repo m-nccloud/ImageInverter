@@ -21,6 +21,7 @@ invertImage(
   final halfHeight = inputImage.height / 2;
   final int centerX = coords[0] != -1 ? coords[0] : halfWidth.floor();
   final int centerY = coords[1] != -1 ? coords[1] : halfHeight.floor();
+  const featherWidth = 1.5;
 
   List<int> boundingBoxCoordinates = [
     1 << 30,
@@ -91,7 +92,27 @@ invertImage(
             final dy = pixel.y - centerY;
             final alignedX = dx * cosTheta + dy * sinTheta;
             final alignedY = -dx * sinTheta + dy * cosTheta;
-            if (alignedX.abs() <= halfMag &&
+
+            if (antiAlias) {
+              final xDistToEdge = halfMag - alignedX.abs();
+              final yDistToEdge =
+                  (shape == InversionShape.rect ? halfScaledH : halfMag) -
+                      alignedY.abs();
+              final minDistToEdge = math.min(xDistToEdge, yDistToEdge);
+              double alpha = (minDistToEdge >= featherWidth)
+                  ? 1.0
+                  : minDistToEdge / featherWidth;
+              if (alignedX.abs() <= halfMag &&
+                  alignedY.abs() <=
+                      (shape == InversionShape.rect ? halfScaledH : halfMag)) {
+                pixel.r = ui.lerpDouble(
+                    pixel.r, (pixelSubtractValue[0] - pixel.r).abs(), alpha)!;
+                pixel.g = ui.lerpDouble(
+                    pixel.g, (pixelSubtractValue[1] - pixel.g).abs(), alpha)!;
+                pixel.b = ui.lerpDouble(
+                    pixel.b, (pixelSubtractValue[2] - pixel.b).abs(), alpha)!;
+              }
+            } else if (alignedX.abs() <= halfMag &&
                 alignedY.abs() <=
                     (shape == InversionShape.rect ? halfScaledH : halfMag)) {
               pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
