@@ -130,7 +130,21 @@ invertImage(
       {
         while (range.moveNext()) {
           final pixel = range.current;
-          if (math.pow(pixel.x - centerX, 2) + math.pow(pixel.y - centerY, 2) <=
+          if (antiAlias &&
+              math.pow(pixel.x - centerX, 2) + math.pow(pixel.y - centerY, 2) <=
+                  math.pow((magnitude / 2).floor(), 2)) {
+            final dx2 = math.pow(pixel.x - centerX, 2);
+            final dy2 = math.pow(pixel.y - centerY, 2);
+            final dist = halfMag - math.sqrt(dx2 + dy2);
+            final alpha = dist >= featherWidth ? 1.0 : dist / featherWidth;
+            pixel.r = ui.lerpDouble(
+                pixel.r, (pixelSubtractValue[0] - pixel.r).abs(), alpha)!;
+            pixel.g = ui.lerpDouble(
+                pixel.g, (pixelSubtractValue[1] - pixel.g).abs(), alpha)!;
+            pixel.b = ui.lerpDouble(
+                pixel.b, (pixelSubtractValue[2] - pixel.b).abs(), alpha)!;
+          } else if (math.pow(pixel.x - centerX, 2) +
+                  math.pow(pixel.y - centerY, 2) <=
               math.pow((magnitude / 2).floor(), 2)) {
             pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
             pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
