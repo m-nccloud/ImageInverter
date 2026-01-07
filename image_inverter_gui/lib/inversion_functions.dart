@@ -160,23 +160,56 @@ invertImage(
           polygonPoints[0] - polygonPoints[2]
         ];
         final edgeNormals = [
-          Offset(-edgeVectors[0].dy, edgeVectors[0].dx),
-          Offset(-edgeVectors[1].dy, edgeVectors[1].dx),
-          Offset(-edgeVectors[2].dy, edgeVectors[2].dx)
+          Offset(-edgeVectors[0].dy / edgeVectors[0].distance,
+              edgeVectors[0].dx / edgeVectors[0].distance),
+          Offset(-edgeVectors[1].dy / edgeVectors[1].distance,
+              edgeVectors[1].dx / edgeVectors[1].distance),
+          Offset(-edgeVectors[2].dy / edgeVectors[2].distance,
+              edgeVectors[2].dx / edgeVectors[2].distance)
         ];
         while (range.moveNext()) {
           final pixel = range.current;
           bool paintPixel = true;
           final point = ui.Offset(pixel.x.toDouble(), pixel.y.toDouble());
-          for (int i = 0; i < 3; i++) {
-            if ((edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
-                    edgeNormals[i].dy * (point.dy - polygonPoints[i].dy)) >
-                0) paintPixel = false;
-          }
-          if (paintPixel) {
-            pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
-            pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
-            pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+          if (antiAlias) {
+            final dist = [0.0, 0.0, 0.0];
+            for (int i = 0; i < 3; i++) {
+              final dist = (edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
+                      edgeNormals[i].dy * (point.dy - polygonPoints[i].dy);
+              if (dist > 0) {
+                paintPixel = false;
+              } 
+              if(dist <= featherWidth)
+              else {
+                dist[i] = edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
+                    edgeNormals[i].dy * (point.dy - polygonPoints[i].dy);
+              }
+            }
+            if (paintPixel) {
+              final minDist = math.min(dist[0], math.min(dist[1], dist[2]));
+              final alpha =
+                  minDist >= featherWidth ? 1.0 : minDist / featherWidth;
+              pixel.r = ui
+                  .lerpDouble(pixel.r, pixelSubtractValue[0] - pixel.r, alpha)!
+                  .abs();
+              pixel.g = ui
+                  .lerpDouble(pixel.g, pixelSubtractValue[1] - pixel.g, alpha)!
+                  .abs();
+              pixel.b = ui
+                  .lerpDouble(pixel.b, pixelSubtractValue[2] - pixel.b, alpha)!
+                  .abs();
+            }
+          } else {
+            for (int i = 0; i < 3; i++) {
+              if ((edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
+                      edgeNormals[i].dy * (point.dy - polygonPoints[i].dy)) >
+                  0) paintPixel = false;
+            }
+            if (paintPixel) {
+              pixel.r = (pixelSubtractValue[0] - pixel.r).abs();
+              pixel.g = (pixelSubtractValue[1] - pixel.g).abs();
+              pixel.b = (pixelSubtractValue[2] - pixel.b).abs();
+            }
           }
         }
       }
