@@ -172,32 +172,30 @@ invertImage(
           bool paintPixel = true;
           final point = ui.Offset(pixel.x.toDouble(), pixel.y.toDouble());
           if (antiAlias) {
-            final dist = [0.0, 0.0, 0.0];
+            final distArr = [-featherWidth, -featherWidth, -featherWidth];
             for (int i = 0; i < 3; i++) {
-              final dist = (edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
-                      edgeNormals[i].dy * (point.dy - polygonPoints[i].dy);
+              final dist =
+                  (edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
+                      edgeNormals[i].dy * (point.dy - polygonPoints[i].dy));
               if (dist > 0) {
                 paintPixel = false;
-              } 
-              if(dist <= featherWidth)
-              else {
-                dist[i] = edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
-                    edgeNormals[i].dy * (point.dy - polygonPoints[i].dy);
+              } else if (dist >= -featherWidth && dist < 0) {
+                distArr[i] =
+                    edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
+                        edgeNormals[i].dy * (point.dy - polygonPoints[i].dy);
               }
             }
             if (paintPixel) {
-              final minDist = math.min(dist[0], math.min(dist[1], dist[2]));
+              final minDist =
+                  math.max(distArr[0], math.max(distArr[1], distArr[2]));
               final alpha =
-                  minDist >= featherWidth ? 1.0 : minDist / featherWidth;
-              pixel.r = ui
-                  .lerpDouble(pixel.r, pixelSubtractValue[0] - pixel.r, alpha)!
-                  .abs();
-              pixel.g = ui
-                  .lerpDouble(pixel.g, pixelSubtractValue[1] - pixel.g, alpha)!
-                  .abs();
-              pixel.b = ui
-                  .lerpDouble(pixel.b, pixelSubtractValue[2] - pixel.b, alpha)!
-                  .abs();
+                  minDist >= featherWidth ? 1.0 : -(minDist / featherWidth);
+              pixel.r = ui.lerpDouble(
+                  pixel.r, (pixelSubtractValue[0] - pixel.r).abs(), alpha)!;
+              pixel.g = ui.lerpDouble(
+                  pixel.g, (pixelSubtractValue[1] - pixel.g).abs(), alpha)!;
+              pixel.b = ui.lerpDouble(
+                  pixel.b, (pixelSubtractValue[2] - pixel.b).abs(), alpha)!;
             }
           } else {
             for (int i = 0; i < 3; i++) {
