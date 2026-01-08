@@ -803,7 +803,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                     _rotSliderDegs = val;
                     _rotThetaRads = (_rotSliderDegs * (math.pi / 180));
                     _repaintFlag = !_repaintFlag;
-                    _rotTextController.text = val.toStringAsFixed(0);
+                    _rotTextController.text = val.ceil().toStringAsFixed(0);
                   });
                   updateTrianglePoints();
                   updateRectanglePoints();
@@ -895,9 +895,12 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                             ))
                         .toList(),
                     onChanged: (value) {
-                      _rotSliderDegs =
-                          changeShapeDegs(_rotSliderDegs, _shape, value!);
                       setState(() {
+                        _rotSliderDegs =
+                            changeShapeDegs(_rotSliderDegs, _shape, value!);
+                        _rotTextController.text =
+                            _rotSliderDegs.ceil().toStringAsFixed(0);
+                        _repaintFlag = !_repaintFlag;
                         if (value == InversionShape.rect) {
                           _shape = InversionShape.rect;
                           _inversionLabel = "Inversion Width";
