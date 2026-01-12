@@ -262,23 +262,24 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     final mag = _shape == InversionShape.box ? _sliderCurr : _rectHeight;
     final widthOverflow = decodedImg.width > _appWindowWidth;
     final scaleFactor = decodedImg.width / _appWindowWidth;
+    final shouldScaleYAxis = widthOverflow && _shape != InversionShape.box;
     setState(() {
       rectPoints[0] = Offset(
           imgCoords[0].toDouble() - (_sliderCurr / 2),
           imgCoords[1].toDouble() -
-              (mag / 2) * (widthOverflow ? scaleFactor : 1));
+              (mag / 2) * (shouldScaleYAxis ? scaleFactor : 1));
       rectPoints[1] = Offset(
           imgCoords[0].toDouble() + (_sliderCurr / 2),
           imgCoords[1].toDouble() -
-              (mag / 2) * (widthOverflow ? scaleFactor : 1));
+              (mag / 2) * (shouldScaleYAxis ? scaleFactor : 1));
       rectPoints[2] = Offset(
           imgCoords[0].toDouble() + (_sliderCurr / 2),
           imgCoords[1].toDouble() +
-              (mag / 2) * (widthOverflow ? scaleFactor : 1));
+              (mag / 2) * (shouldScaleYAxis ? scaleFactor : 1));
       rectPoints[3] = Offset(
           imgCoords[0].toDouble() - (_sliderCurr / 2),
           imgCoords[1].toDouble() +
-              (mag / 2) * (widthOverflow ? scaleFactor : 1));
+              (mag / 2) * (shouldScaleYAxis ? scaleFactor : 1));
       if (isRotated()) {
         for (int i = 0; i < 4; i++) {
           rectPoints[i] = rotatePoint(
