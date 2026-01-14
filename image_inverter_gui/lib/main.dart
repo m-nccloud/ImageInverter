@@ -542,6 +542,24 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     });
   }
 
+  void reverseInversion() async {
+    getCoords();
+    var inputImage = decodedImg;
+    invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
+        _shape, _rotThetaRads, _antiAlias,
+        rotated: isRotated(),
+        reverse: true,
+        polygonPoints: _shape == InversionShape.triangle
+            ? rotatedTrianglePoints
+            : rectPoints);
+
+    ui.Image uiImg = await convertImageToFlutterUi(inputImage);
+    final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+    setState(() {
+      _imgMemory = Uint8List.view(pngBytes!.buffer);
+    });
+  }
+
   void invertSelectedImage() async {
     getCoords();
     setState(() {
@@ -996,6 +1014,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         ElevatedButton(
             onPressed: () => {invertSelectedImage()},
             child: Text('Invert Image')),
+        ElevatedButton(
+            onPressed: () => {reverseInversion()},
+            child: Text('Reverse Inversion')),
         ElevatedButton(
             onPressed: () => {saveInvertedImage()}, child: Text('Save Image')),
         Visibility(
