@@ -548,7 +548,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
         _shape, _rotThetaRads, _antiAlias,
         rotated: isRotated(),
-        reverse: true,
         polygonPoints: _shape == InversionShape.triangle
             ? rotatedTrianglePoints
             : rectPoints);
