@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image/image.dart' as img;
 import 'enums.dart';
 
-invertImage(
+void invertImage(
     img.Image inputImage,
     int magnitude,
     List<int> coords,
@@ -52,18 +52,18 @@ invertImage(
     boundingBoxCoordinates[3] =
         math.min(boundingBoxCoordinates[3], inputImage.height - 1);
   } else {
-    int l_y = 0;
+    int lY = 0;
     switch (shape) {
       case InversionShape.circle:
       case InversionShape.box:
-        l_y = math.max(centerY - halfMag.floor(), 0);
+        lY = math.max(centerY - halfMag.floor(), 0);
       case InversionShape.rect:
-        l_y = math.max(centerY - halfScaledH.floor(), 0);
+        lY = math.max(centerY - halfScaledH.floor(), 0);
       case InversionShape.triangle:
-        l_y = math.max(centerY - (magnitude * (2 / 3)).floor(), 0);
+        lY = math.max(centerY - (magnitude * (2 / 3)).floor(), 0);
     }
     boundingBoxCoordinates[0] = math.max(centerX - halfMag.floor(), 0);
-    boundingBoxCoordinates[1] = l_y;
+    boundingBoxCoordinates[1] = lY;
     boundingBoxCoordinates[2] =
         math.min(centerX + halfMag.floor(), inputImage.width - 1);
     boundingBoxCoordinates[3] = math.min(
@@ -201,7 +201,9 @@ invertImage(
             for (int i = 0; i < 3; i++) {
               if ((edgeNormals[i].dx * (point.dx - polygonPoints[i].dx) +
                       edgeNormals[i].dy * (point.dy - polygonPoints[i].dy)) >
-                  0) paintPixel = false;
+                  0) {
+                paintPixel = false;
+              }
             }
             if (paintPixel) {
               pixel.r = (pixelSubtractValue[0] - pixel.r).abs();

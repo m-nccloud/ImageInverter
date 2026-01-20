@@ -7,7 +7,7 @@ import 'dart:ui' as ui;
 import 'dart:io';
 import 'package:image/image.dart' as img;
 import 'package:image_inverter_gui_flutter/inversion_functions.dart';
-import 'package:win32/win32.dart';
+import 'dpi_helper/dpi_helper.dart';
 import 'enums.dart';
 import 'dart:async';
 import 'package:screen_retriever/screen_retriever.dart';
@@ -314,12 +314,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   void initState() {
     super.initState();
     if (Platform.isWindows) {
-      SetProcessDpiAwareness(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
-      _displayWidth = GetSystemMetrics(
-          SM_CXSCREEN); // the actual pixel width of display monitor 1
-      _displayHeight = GetSystemMetrics(
-          SM_CYSCREEN); // the actual pixel height of display monitor 1
-      _screenThreshold = (_displayWidth * 0.7).floor();
+      final displayMetrics = setHighDpiAwareness();
+      _displayWidth = displayMetrics.$1;
+      _displayHeight = displayMetrics.$2;
+      _screenThreshold = displayMetrics.$3;
     } else if (Platform.isLinux) {
       initDisplays();
     }
@@ -327,7 +325,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         TextEditingController(text: _rotSliderDegs.toStringAsFixed(0));
   }
 
-  initDisplays() async {
+  Future<void> initDisplays() async {
     var display = await screenRetriever.getPrimaryDisplay();
     setState(() {
       _displayHeight = display.size.height.round();
@@ -533,7 +531,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     }
   }
 
-  void writeLoadingMessage(timer) {
+  void writeLoadingMessage(dynamic timer) {
     setState(() {
       _loadingText += " .";
       if (timer.tick == 4) {
