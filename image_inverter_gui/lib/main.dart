@@ -39,9 +39,7 @@ class OutlinePainter extends CustomPainter {
       this.repaintFlag,
       this.trianglePoints,
       this.isRotated,
-      this.rectPoints) {
-    print(scaleFactor);
-  }
+      this.rectPoints);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -343,7 +341,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // printVars();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       var getImgWidgetSizeVal = getImageWidgetSize(_keyImage.currentContext);
       if (imageWidgetSize != getImgWidgetSizeVal) {
@@ -483,7 +480,6 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
     _prevAppWindowWidth = _appWindowWidth;
     _prevAppWindowHeight = appWindowHeight;
-    // printVars();
     return Scaffold(
         body: Center(
             child: Column(
