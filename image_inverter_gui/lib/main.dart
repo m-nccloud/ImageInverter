@@ -135,6 +135,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   bool _imgNotYetBuilt = true;
   bool _startedFullscreen = false;
   bool _initialImageLoad = false;
+  bool _previouslyCleared = true;
   int _appWindowWidth = 0;
   int _prevAppWindowWidth = -1;
   int _prevAppWindowHeight = -1;
@@ -541,6 +542,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   }
 
   void invertSelectedImage() async {
+    _previouslyCleared = false;
     getCoords();
     setState(() {
       _isLoading = true;
@@ -571,12 +573,12 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
   void undoInversion() async {
     if (!canUndo) return;
+    _previouslyCleared = false;
     setState(() {
       _isLoading = true;
     });
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    // ui.Image uiImg = await convertImageToFlutterUi(decodedImgPrev);
     ui.Image uiImg = await convertImageToFlutterUi(decodedImgPrevStack.last);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     decodedImgNextStack.add(decodedImg.clone());
@@ -591,6 +593,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
 
   void redoInversion() async {
     if (!canRedo) return;
+    _previouslyCleared = false;
     setState(() {
       _isLoading = true;
     });
@@ -635,15 +638,18 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   }
 
   void clearInversion() async {
+    if (_previouslyCleared) return;
     var uneditedImg =
         await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
     ui.Image uiImg = await convertImageToFlutterUi(uneditedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+    decodedImgPrevStack.add(decodedImg.clone());
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
       decodedImg = uneditedImg;
       decodedImgNextStack.clear();
     });
+    _previouslyCleared = true;
   }
 
   void resetInversionCenter() {
