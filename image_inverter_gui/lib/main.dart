@@ -1004,9 +1004,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
             onPressed: () => {saveInvertedImage()}, child: Text('Save Image')),
         Visibility(
             visible: _imgFilePath.isNotEmpty && !_imageExceptionOccurred,
-            child: Text(_editingText + _imgFilePath)),
+            child: Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: Text(maxLines: 1, _editingText + _imgFilePath, softWrap: false)))),
         Visibility(visible: _isLoading, child: Text(_loadingText)),
-        Spacer(),
         ElevatedButton(
             onPressed: canUndo ? () => {undoInversion()} : null,
             child: Text('Undo')),
