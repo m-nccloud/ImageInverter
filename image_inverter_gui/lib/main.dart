@@ -810,7 +810,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                   updateRectanglePoints();
                 }),
             SizedBox(
-              height: 25,
+              height: 30,
               width: 60,
               child: TextField(
                   controller: _rotTextController,
@@ -1000,7 +1000,13 @@ class _ImgInverterState extends State<ImgInverterWidget> {
             onPressed: () => {saveInvertedImage()}, child: Text('Save Image')),
         Visibility(
             visible: _imgFilePath.isNotEmpty && !_imageExceptionOccurred,
-            child: Expanded(child: SingleChildScrollView(scrollDirection: Axis.horizontal, child: Text(maxLines: 1, _editingText + _imgFilePath, softWrap: false)))),
+            child: Expanded(
+                child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Text(
+                        maxLines: 1,
+                        _editingText + _imgFilePath,
+                        softWrap: false)))),
         Visibility(visible: _isLoading, child: Text(_loadingText)),
         ElevatedButton(
             onPressed: canUndo ? () => {undoInversion()} : null,
