@@ -167,10 +167,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   double _rectHeight = 0.0;
   InversionShape _shape = InversionShape.rect;
   img.Image decodedImg = img.Image.empty();
-  List<img.Image> decodedImgPrevStack = [];
-  List<img.Image> decodedImgNextStack = [];
-  bool get canUndo => decodedImgPrevStack.isNotEmpty;
-  bool get canRedo => decodedImgNextStack.isNotEmpty;
+  List<List<int>> compressedImgPrevStack = [];
+  List<List<int>> compressedImgNextStack = [];
+  bool get canRedo => compressedImgNextStack.isNotEmpty;
+  bool get canUndo => compressedImgPrevStack.isNotEmpty;
   var _pixelSliderCurr = [255.0, 255.0, 255.0];
   var _pixelSliderCurrInt = [255, 255, 255];
   late ui.Codec codec;
@@ -547,9 +547,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
 
     var inputImage = decodedImg;
-
-    decodedImgPrevStack.add(decodedImg.clone());
-    decodedImgNextStack.clear();
+    
+    compressedImgPrevStack.add(gzip.encode(decodedImg.clone().getBytes()));
 
     invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
         _shape, _rotThetaRads, _antiAlias,
@@ -575,16 +574,18 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     });
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    ui.Image uiImg = await convertImageToFlutterUi(decodedImgPrevStack.last);
+    final prevImageBytes = Uint8List.fromList(gzip.decode(compressedImgPrevStack.last));
+    final prevImage = img.Image.fromBytes(width: decodedImg.width, height: decodedImg.height, bytes: prevImageBytes.buffer);
+    ui.Image uiImg = await convertImageToFlutterUi(prevImage);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
-    decodedImgNextStack.add(decodedImg.clone());
+    compressedImgNextStack.add(gzip.encode(decodedImg.clone().getBytes()));
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
-      decodedImg = decodedImgPrevStack.last.clone();
+      decodedImg = prevImage.clone();
       inversionTimer.cancel();
       _isLoading = false;
     });
-    decodedImgPrevStack.removeLast();
+    compressedImgPrevStack.removeLast();
   }
 
   void redoInversion() async {
@@ -595,18 +596,18 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     });
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    // ui.Image uiImg = await convertImageToFlutterUi(decodedImgNext);
-    ui.Image uiImg = await convertImageToFlutterUi(decodedImgNextStack.last);
+    final nextImgBytes = Uint8List.fromList(gzip.decode(compressedImgNextStack.last));
+    final nextImg = img.Image.fromBytes(width: decodedImg.width, height: decodedImg.height, bytes: nextImgBytes.buffer);
+    ui.Image uiImg = await convertImageToFlutterUi(nextImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
-    decodedImgPrevStack.add(decodedImg.clone());
+    compressedImgPrevStack.add(gzip.encode(decodedImg.clone().getBytes()));
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
-      // decodedImg = decodedImgNext.clone();
-      decodedImg = decodedImgNextStack.last.clone();
+      decodedImg = nextImg.clone();
       inversionTimer.cancel();
       _isLoading = false;
     });
-    decodedImgNextStack.removeLast();
+    compressedImgNextStack.removeLast();
   }
 
   void printVars() {
@@ -639,11 +640,11 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
     ui.Image uiImg = await convertImageToFlutterUi(uneditedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
-    decodedImgPrevStack.add(decodedImg.clone());
+    compressedImgPrevStack.add(gzip.encode(decodedImg.clone().getBytes()));
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
       decodedImg = uneditedImg;
-      decodedImgNextStack.clear();
+      compressedImgNextStack.clear();
     });
     _previouslyCleared = true;
   }
