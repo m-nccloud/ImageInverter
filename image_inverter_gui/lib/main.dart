@@ -1005,9 +1005,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
                     scrollDirection: Axis.horizontal,
                     child: Text(
                         maxLines: 1,
-                        _editingText + _imgFilePath,
+                        _editingText +
+                            _imgFilePath +
+                            (_isLoading ? _loadingText : ""),
                         softWrap: false)))),
-        Visibility(visible: _isLoading, child: Text(_loadingText)),
         ElevatedButton(
             onPressed: canUndo ? () => {undoInversion()} : null,
             child: Text('Undo')),
