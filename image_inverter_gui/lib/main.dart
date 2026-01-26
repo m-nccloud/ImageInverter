@@ -14,6 +14,8 @@ import 'package:screen_retriever/screen_retriever.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  PaintingBinding.instance.imageCache.maximumSizeBytes = 50 * 1024 * 1024;
   runApp(const ImageInverter());
 }
 
@@ -524,6 +526,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           _imageBuildCount++;
         });
         resetInversionCenter();
+        PaintingBinding.instance.imageCache.clear();
+        PaintingBinding.instance.imageCache.clearLiveImages();
       }
     }
   }
@@ -547,7 +551,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
 
     var inputImage = decodedImg;
-    
+
     compressedImgPrevStack.add(gzip.encode(decodedImg.clone().getBytes()));
 
     invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
@@ -574,8 +578,12 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     });
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    final prevImageBytes = Uint8List.fromList(gzip.decode(compressedImgPrevStack.last));
-    final prevImage = img.Image.fromBytes(width: decodedImg.width, height: decodedImg.height, bytes: prevImageBytes.buffer);
+    final prevImageBytes =
+        Uint8List.fromList(gzip.decode(compressedImgPrevStack.last));
+    final prevImage = img.Image.fromBytes(
+        width: decodedImg.width,
+        height: decodedImg.height,
+        bytes: prevImageBytes.buffer);
     ui.Image uiImg = await convertImageToFlutterUi(prevImage);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     compressedImgNextStack.add(gzip.encode(decodedImg.clone().getBytes()));
@@ -596,8 +604,12 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     });
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    final nextImgBytes = Uint8List.fromList(gzip.decode(compressedImgNextStack.last));
-    final nextImg = img.Image.fromBytes(width: decodedImg.width, height: decodedImg.height, bytes: nextImgBytes.buffer);
+    final nextImgBytes =
+        Uint8List.fromList(gzip.decode(compressedImgNextStack.last));
+    final nextImg = img.Image.fromBytes(
+        width: decodedImg.width,
+        height: decodedImg.height,
+        bytes: nextImgBytes.buffer);
     ui.Image uiImg = await convertImageToFlutterUi(nextImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
     compressedImgPrevStack.add(gzip.encode(decodedImg.clone().getBytes()));
