@@ -1,17 +1,19 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'dart:ui' as ui;
-import 'dart:io';
+import 'dart:io' show Platform, File;
 import 'package:image/image.dart' as img;
-import 'package:image_inverter_gui_flutter/inversion_functions.dart';
 import 'dpi_helper/dpi_helper.dart';
 import 'enums.dart';
 import 'dart:async';
 import 'package:screen_retriever/screen_retriever.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'operation.dart';
+import 'inverse_operation.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -169,10 +171,11 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   double _rectHeight = 0.0;
   InversionShape _shape = InversionShape.rect;
   img.Image decodedImg = img.Image.empty();
-  List<List<int>> compressedImgPrevStack = [];
-  List<List<int>> compressedImgNextStack = [];
-  bool get canRedo => compressedImgNextStack.isNotEmpty;
-  bool get canUndo => compressedImgPrevStack.isNotEmpty;
+  img.Image _originalImage = img.Image.empty();
+  List<Operation> operationPrevStack = [];
+  List<Operation> operationNextStack = [];
+  bool get canRedo => operationNextStack.isNotEmpty;
+  bool get canUndo => operationPrevStack.isNotEmpty;
   var _pixelSliderCurr = [255.0, 255.0, 255.0];
   var _pixelSliderCurrInt = [255, 255, 255];
   late ui.Codec codec;
@@ -180,6 +183,10 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   late double rectRatio;
   final List<int> imgCoords = List<int>.filled(2, -1);
   final _keyImage = GlobalKey();
+  final ScrollController _verticalScrollController = ScrollController();
+  final ScrollController _horizontalScrollController = ScrollController();
+  double _savedVerticalOffset = 0.0;
+  double _savedHorizontalOffset = 0.0;
   Size? prevImageWidgetSize;
   Size? imageWidgetSize;
   List<Offset> rotatedTrianglePoints = [
@@ -314,13 +321,20 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   @override
   void initState() {
     super.initState();
-    if (Platform.isWindows) {
-      final displayMetrics = setHighDpiAwareness();
-      _displayWidth = displayMetrics.$1;
-      _displayHeight = displayMetrics.$2;
-      _screenThreshold = displayMetrics.$3;
-    } else if (Platform.isLinux) {
-      initDisplays();
+    if (!kIsWeb) {
+      if (Platform.isWindows) {
+        final displayMetrics = setHighDpiAwareness();
+        _displayWidth = displayMetrics.$1;
+        _displayHeight = displayMetrics.$2;
+        _screenThreshold = displayMetrics.$3;
+      } else if (Platform.isLinux) {
+        initDisplays();
+      }
+    } else {
+      // Web platform - use window dimensions
+      _displayWidth = 1920; // Default for web
+      _displayHeight = 1080;
+      _screenThreshold = (_displayWidth * 0.7).floor();
     }
     _rotTextController =
         TextEditingController(text: _rotSliderDegs.toStringAsFixed(0));
@@ -338,6 +352,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   @override
   void dispose() {
     _rotTextController.dispose();
+    _verticalScrollController.dispose();
+    _horizontalScrollController.dispose();
     super.dispose();
   }
 
@@ -502,6 +518,7 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         try {
           decodedImg =
               await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
+          _originalImage = decodedImg.clone();
         } on img.ImageException catch (ex) {
           print(ex);
           setState(() {
@@ -524,6 +541,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
           if (_imageBuildCount > 0) _initialImageLoad = true;
           _appFullScreened = false;
           _imageBuildCount++;
+          operationPrevStack.clear();
+          operationNextStack.clear();
         });
         resetInversionCenter();
         PaintingBinding.instance.imageCache.clear();
@@ -541,85 +560,195 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     });
   }
 
+  void _rebuildImageFromOperations(List<Operation> operations) {
+    decodedImg = _originalImage.clone();
+    
+    for (final operation in operations) {
+      operation.forwards(decodedImg);
+    }
+  }
+
   void invertSelectedImage() async {
     _previouslyCleared = false;
     getCoords();
+    
+    if (_verticalScrollController.hasClients) {
+      _savedVerticalOffset = _verticalScrollController.offset;
+    }
+    if (_horizontalScrollController.hasClients) {
+      _savedHorizontalOffset = _horizontalScrollController.offset;
+    }
+    
     setState(() {
       _isLoading = true;
     });
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
 
-    var inputImage = decodedImg;
+    final operation = InverseOperation.fromState(
+      magnitude: _sliderCurr.floor(),
+      coords: List.from(imgCoords),
+      pixelSubtractValue: List.from(_pixelSliderCurrInt),
+      shape: _shape,
+      rotationTheta: _rotThetaRads,
+      antiAlias: _antiAlias,
+      rotated: isRotated(),
+      polygonPoints: _shape == InversionShape.triangle
+          ? rotatedTrianglePoints
+          : rectPoints,
+    );
+    operationPrevStack.add(operation);
 
-    compressedImgPrevStack.add(gzip.encode(decodedImg.clone().getBytes()));
+    operationNextStack.clear();
 
-    invertImage(inputImage, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
-        _shape, _rotThetaRads, _antiAlias,
-        rotated: isRotated(),
-        polygonPoints: _shape == InversionShape.triangle
-            ? rotatedTrianglePoints
-            : rectPoints);
-    ui.Image uiImg = await convertImageToFlutterUi(inputImage);
+    _rebuildImageFromOperations(operationPrevStack);
+    
+    ui.Image uiImg = await convertImageToFlutterUi(decodedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
+    
+    // Restore scroll position immediately before setState to prevent flicker
+    if (_verticalScrollController.hasClients) {
+      _verticalScrollController.jumpTo(_savedVerticalOffset);
+    }
+    if (_horizontalScrollController.hasClients) {
+      _horizontalScrollController.jumpTo(_savedHorizontalOffset);
+    }
+    
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
       inversionTimer.cancel();
       _isLoading = false;
       _loadingText = "\t\tInverting image";
     });
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_verticalScrollController.hasClients && _verticalScrollController.offset != _savedVerticalOffset) {
+        _verticalScrollController.jumpTo(_savedVerticalOffset);
+      }
+      if (_horizontalScrollController.hasClients && _horizontalScrollController.offset != _savedHorizontalOffset) {
+        _horizontalScrollController.jumpTo(_savedHorizontalOffset);
+      }
+    });
   }
 
   void undoInversion() async {
     if (!canUndo) return;
     _previouslyCleared = false;
+    
+    // Save scroll positions before any setState calls
+    if (_verticalScrollController.hasClients) {
+      _savedVerticalOffset = _verticalScrollController.offset;
+    }
+    if (_horizontalScrollController.hasClients) {
+      _savedHorizontalOffset = _horizontalScrollController.offset;
+    }
+    
     setState(() {
       _isLoading = true;
     });
+    
+    scheduleMicrotask(() {
+      if (_verticalScrollController.hasClients) {
+        _verticalScrollController.jumpTo(_savedVerticalOffset);
+      }
+      if (_horizontalScrollController.hasClients) {
+        _horizontalScrollController.jumpTo(_savedHorizontalOffset);
+      }
+    });
+    
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    final prevImageBytes =
-        Uint8List.fromList(gzip.decode(compressedImgPrevStack.last));
-    final prevImage = img.Image.fromBytes(
-        width: decodedImg.width,
-        height: decodedImg.height,
-        bytes: prevImageBytes.buffer);
-    ui.Image uiImg = await convertImageToFlutterUi(prevImage);
+    
+    final operation = operationPrevStack.removeLast();
+    
+    operationNextStack.add(operation);
+    
+    _rebuildImageFromOperations(operationPrevStack);
+    
+    ui.Image uiImg = await convertImageToFlutterUi(decodedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
-    compressedImgNextStack.add(gzip.encode(decodedImg.clone().getBytes()));
+    
+    if (_verticalScrollController.hasClients) {
+      _verticalScrollController.jumpTo(_savedVerticalOffset);
+    }
+    if (_horizontalScrollController.hasClients) {
+      _horizontalScrollController.jumpTo(_savedHorizontalOffset);
+    }
+    
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
-      decodedImg = prevImage.clone();
       inversionTimer.cancel();
       _isLoading = false;
     });
-    compressedImgPrevStack.removeLast();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_verticalScrollController.hasClients && _verticalScrollController.offset != _savedVerticalOffset) {
+        _verticalScrollController.jumpTo(_savedVerticalOffset);
+      }
+      if (_horizontalScrollController.hasClients && _horizontalScrollController.offset != _savedHorizontalOffset) {
+        _horizontalScrollController.jumpTo(_savedHorizontalOffset);
+      }
+    });
   }
 
   void redoInversion() async {
     if (!canRedo) return;
     _previouslyCleared = false;
+    
+    // Save scroll positions before any setState calls
+    if (_verticalScrollController.hasClients) {
+      _savedVerticalOffset = _verticalScrollController.offset;
+    }
+    if (_horizontalScrollController.hasClients) {
+      _savedHorizontalOffset = _horizontalScrollController.offset;
+    }
+    
     setState(() {
       _isLoading = true;
     });
+    
+    scheduleMicrotask(() {
+      if (_verticalScrollController.hasClients) {
+        _verticalScrollController.jumpTo(_savedVerticalOffset);
+      }
+      if (_horizontalScrollController.hasClients) {
+        _horizontalScrollController.jumpTo(_savedHorizontalOffset);
+      }
+    });
+    
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
-    final nextImgBytes =
-        Uint8List.fromList(gzip.decode(compressedImgNextStack.last));
-    final nextImg = img.Image.fromBytes(
-        width: decodedImg.width,
-        height: decodedImg.height,
-        bytes: nextImgBytes.buffer);
-    ui.Image uiImg = await convertImageToFlutterUi(nextImg);
+    
+    final operation = operationNextStack.removeLast();
+    
+    operationPrevStack.add(operation);
+    
+    _rebuildImageFromOperations(operationPrevStack);
+    
+    ui.Image uiImg = await convertImageToFlutterUi(decodedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
-    compressedImgPrevStack.add(gzip.encode(decodedImg.clone().getBytes()));
+    
+    if (_verticalScrollController.hasClients) {
+      _verticalScrollController.jumpTo(_savedVerticalOffset);
+    }
+    if (_horizontalScrollController.hasClients) {
+      _horizontalScrollController.jumpTo(_savedHorizontalOffset);
+    }
+    
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
-      decodedImg = nextImg.clone();
       inversionTimer.cancel();
       _isLoading = false;
     });
-    compressedImgNextStack.removeLast();
+    
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_verticalScrollController.hasClients && _verticalScrollController.offset != _savedVerticalOffset) {
+        _verticalScrollController.jumpTo(_savedVerticalOffset);
+      }
+      if (_horizontalScrollController.hasClients && _horizontalScrollController.offset != _savedHorizontalOffset) {
+        _horizontalScrollController.jumpTo(_savedHorizontalOffset);
+      }
+    });
   }
 
   void printVars() {
@@ -633,6 +762,13 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   }
 
   void saveInvertedImage() async {
+    if (kIsWeb) {
+      // Web platform - file saving not supported, show message
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('File saving not available on web. Please use Windows desktop version.')),
+      );
+      return;
+    }
     var savePath = await FilePicker.platform
         .saveFile(type: FileType.custom, allowedExtensions: ['png']);
     if (savePath != null) {
@@ -652,11 +788,13 @@ class _ImgInverterState extends State<ImgInverterWidget> {
         await img.decodeImageFile(_imgFilePath) ?? img.Image.empty();
     ui.Image uiImg = await convertImageToFlutterUi(uneditedImg);
     final pngBytes = await uiImg.toByteData(format: ui.ImageByteFormat.png);
-    compressedImgPrevStack.add(gzip.encode(decodedImg.clone().getBytes()));
+    
     setState(() {
       _imgMemory = Uint8List.view(pngBytes!.buffer);
-      decodedImg = uneditedImg;
-      compressedImgNextStack.clear();
+      decodedImg = uneditedImg.clone();
+      _originalImage = uneditedImg.clone();
+      operationPrevStack.clear();
+      operationNextStack.clear();
     });
     _previouslyCleared = true;
   }
@@ -969,21 +1107,28 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       SizedBox(height: _imgWidgetPadding),
       Expanded(
         child: SingleChildScrollView(
-          child: Listener(
-              key: _keyImage,
-              onPointerDown: _updateLocation,
-              onPointerMove: _updateLocation,
-              child: Stack(
-                children: [
-                  imgGetter(),
-                  Positioned(
-                      top: _yInImage -
-                          15, //for mouse pointer (TODO: add conditional for mobile devices)
-                      left: _xInImage - 15,
-                      child: SvgPicture.asset(
-                          'assets/svgs/circle-dashed-svgrepo-com.svg'))
-                ],
-              )),
+          key: const ValueKey('vertical_scroll'),
+          controller: _verticalScrollController,
+          child: SingleChildScrollView(
+            key: const ValueKey('horizontal_scroll'),
+            controller: _horizontalScrollController,
+            scrollDirection: Axis.horizontal,
+            child: Listener(
+                key: _keyImage,
+                onPointerDown: _updateLocation,
+                onPointerMove: _updateLocation,
+                child: Stack(
+                  children: [
+                    imgGetter(),
+                    Positioned(
+                        top: _yInImage -
+                            15, //for mouse pointer (TODO: add conditional for mobile devices)
+                        left: _xInImage - 15,
+                        child: SvgPicture.asset(
+                            'assets/svgs/circle-dashed-svgrepo-com.svg'))
+                  ],
+                )),
+          ),
         ),
       ),
       Slider(
