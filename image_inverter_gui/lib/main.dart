@@ -145,6 +145,9 @@ class _ImgInverterState extends State<ImgInverterWidget> {
   int _imageBuildCount = 0;
   double _rotSliderDegs = 0;
   double _rotSliderMax = 180;
+  int _currentUndoCacheBytes = 0;
+  static const int _maxUndoCacheBytes = 367001600; //350mb
+
   static const Map<InversionShape, double> _shapeRotMaxes = {
     InversionShape.rect: 180.0,
     InversionShape.box: 90.0,
@@ -552,9 +555,8 @@ class _ImgInverterState extends State<ImgInverterWidget> {
     var inversionTimer =
         Timer.periodic(const Duration(milliseconds: 500), writeLoadingMessage);
 
-    compressedImgPrevStack.add(
-        gzip.encode(decodedImg.clone().getBytes(order: img.ChannelOrder.rgba)));
-
+    final compressedImg =
+        gzip.encode(decodedImg.clone().getBytes(order: img.ChannelOrder.rgba));
     invertImage(decodedImg, _sliderCurr.floor(), imgCoords, _pixelSliderCurrInt,
         _shape, _rotThetaRads, _antiAlias,
         rotated: isRotated(),
@@ -569,6 +571,13 @@ class _ImgInverterState extends State<ImgInverterWidget> {
       _isLoading = false;
       _loadingText = "\t\tInverting image";
     });
+
+    compressedImgPrevStack.add(compressedImg);
+    _currentUndoCacheBytes += Uint8List.fromList(compressedImg).lengthInBytes;
+    while (_currentUndoCacheBytes > _maxUndoCacheBytes) {
+      final oldest = compressedImgPrevStack.removeAt(0);
+      _currentUndoCacheBytes -= Uint8List.fromList(oldest).lengthInBytes;
+    }
   }
 
   void undoInversion() async {
