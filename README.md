@@ -2,40 +2,50 @@ Image Inverter
 --------------
 Image Inverter is a creatively named cross-platform photo editing and art generation application that lets you "draw" over an image by inverting selected portions of its pixels.
 
-There are currently three shapes available:  
+There are currently four shapes available:  
 -Rect, which is a rectangle matching the dimensions of the target image  
 -Box, which is like rect but square, with max edge length matching the width of the image  
 -Circle, which is pretty self explanatory (max diameter matches the image width)  
-
-There is also an option for "accumulating", which will retain subsequent inversions instead of clearing the image after each. This is enabled by default.  
+-Triangle **(NEW!)**
 
 Additionally, you can choose the value of each rgb color subtracted from the base pixel rgb values to create the inversion. Try experimenting with different values for interesting results :D
 
 This is my first Flutter app so please let me know if there's anything I can improve!
 
-Current WIP:  
+### New features in version 2: ###   
+-Triangles
+-Rotation
+-Anti-aliasing (enabled by default via the "AA" checkbox)
+-Multiple undo/redo
+-Various quality of life improvements
+
+Continuing WIP:  
 -general code refactoring  
 -additional shapes  
--undo and redo button 
--optional secondary non-inversion area
 
-To run:  
+### To run: ###  
+For all platforms: if compiling from source, make sure you have Flutter installed on your machine (https://docs.flutter.dev/install/quick)
+
 Windows:  
--If compiling from source: make sure you have flutter installed on your machine, clone the repo and from the `image_inverter_gui` folder level run `flutter run` and select Windows or Edge if applicable. If you have issues, running `flutter pub get` should resolve them, if that doesn't work feel free to open a bug report and I'll do my best to investigate  
+-If compiling from source: clone the repo and from the `image_inverter_gui` folder level run `flutter pub get` followed by `flutter run -d windows --release`.   
 -Otherwise, just download the .zip file from the 'Releases' section in the repo, extract it and run the .exe inside from the extracted folder **(note: it needs to be in the same folder as the /data folder and .dlls to run. I may look into the possibility of bundling these in the future but for now this is needed)**
 
--- MacOS and Linux builds and instructions coming soon --
+MacOs:
+-Download the .dmg file, double click it (or right click -> 'Open') to expose the executable and then double click that to run, OR compile from source by running `flutter pub get` and `flutter run -d macos --release`
+
+Linux:
+-Download the tarball and double click it (or from the command line run `tar -xzvf image_inverter_v2_linux.tar.gz`) to extract the folder, and double click the executable inside to run (or run `./image_inverter_v2` in the command line), OR compile from source by running `flutter pub get` and `flutter run -d linux --release`
 
 Feel free to check out the `image_inverter_examples` folder for inspiration if you like and have fun inverting :)
 
 Screenshots and examples:
 ---------------------------------------------------------------------------------------------------------------
 ![image](https://github.com/user-attachments/assets/64fd7b63-5b74-4040-87d4-78059a7601f1)
-<img width="2048" height="1576" alt="candy_oil" src="https://github.com/user-attachments/assets/d5be0602-c22d-48a7-ad02-55d74637c6bd" />
+<img width="2048" height="1576" alt="pollock" src="https://github.com/user-attachments/assets/a26b3a15-904a-4740-b161-610b3a3fb465" />
+<img width="2560" height="1440" alt="eva_inverted_cool png" src="https://github.com/user-attachments/assets/35ee22d3-41cd-49ef-b72f-c7359f3e9df4" />
 ![palms](https://github.com/user-attachments/assets/f635069c-12ea-4ba4-a07e-c59b41ae52fe)
 ![asdasd](https://github.com/user-attachments/assets/2e49f990-845c-4746-b254-c1b8dc5618df)
 ![pagoda_inv](https://github.com/user-attachments/assets/933576ec-f4e3-4e51-b019-6f2934f7e7a1)
-![eva_inverted6](https://github.com/user-attachments/assets/4cea60c5-14e6-4f54-adc0-d152a6555a56)
 ![cmatrix2_abstract_bg](https://github.com/user-attachments/assets/9c2d53eb-9f88-4f35-acce-9a772c60058e)
 
 BP Oil Spill photo by Daniel Beltrá
