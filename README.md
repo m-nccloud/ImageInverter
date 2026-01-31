@@ -12,7 +12,7 @@ Additionally, you can choose the value of each rgb color subtracted from the bas
 
 This is my first Flutter app so please let me know if there's anything I can improve!
 
-### New features in version 2: ###   
+### New features in version 2: ###
 -Triangles   
 -Rotation   
 -Anti-aliasing (enabled by default via the "AA" checkbox)   
@@ -38,12 +38,12 @@ For all platforms: if compiling from source, make sure you have Flutter installe
 
 Feel free to check out the `image_inverter_examples` folder for inspiration if you like and have fun inverting :)
 
-Screenshots and examples:
----------------------------------------------------------------------------------------------------------------
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/24867eb6-3c83-48cd-ae4c-f009a541bad5" />   
+Examples:
+---------------------------------------------------------------------------------------------------------------   
 <img width="2048" height="1576" alt="pollock" src="https://github.com/user-attachments/assets/a26b3a15-904a-4740-b161-610b3a3fb465" />   
 <img width="2560" height="1440" alt="eva_inverted_cool png" src="https://github.com/user-attachments/assets/35ee22d3-41cd-49ef-b72f-c7359f3e9df4" />   
 
+![ufyim](https://github.com/user-attachments/assets/e5776956-c0d0-4213-b313-42cac701f795)
 ![palms](https://github.com/user-attachments/assets/f635069c-12ea-4ba4-a07e-c59b41ae52fe)   
 ![asdasd](https://github.com/user-attachments/assets/2e49f990-845c-4746-b254-c1b8dc5618df)   
 ![pagoda_inv](https://github.com/user-attachments/assets/933576ec-f4e3-4e51-b019-6f2934f7e7a1)   
